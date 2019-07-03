@@ -32,7 +32,6 @@ public:
   void push(const T& data)
   {
     node<T>* new_node = new node<T>(data);
-    // std::cout << "add node(" << data << ") at: " << new_node << "\n";
 
     new_node->next = head.load(std::memory_order_relaxed);
 
@@ -48,7 +47,7 @@ public:
     if (old_head)
     {
       T tmp = std::move(old_head->data);
-      // std::cout << "pop: " << tmp << " (" << tr << " try) at: " << old_head << "\n";
+      // possible data race:
       delete old_head;
       return tmp;
     }
@@ -63,7 +62,6 @@ int main()
 {
   for (size_t i = 0; i < 1000ul; i++)
   {
-    // std::cout << "============================\n";
     stack<int> s;
     s.push(1);
     s.push(2);
@@ -71,16 +69,25 @@ int main()
     s.push(4);
     s.push(5);
 
-    std::thread t1([&] { s.pop(); });
+    std::thread t1([&] {
+      // #1 begin pop
+      // imagine the thread is preempted after entering CAS
+      // therefore we have a pointer the the head: old_head
+      // and a pointer to next: old_head_next
+      // #4 when comparing head with old_head, the pointer is the same
+      // we then change head for old_head_next which point to nothing known
+      s.pop();
+    });
     std::thread t2([&] {
+      // #2 then t2 execute all 3 instructions
       s.pop();
       s.pop();
+      // #3 when pushing 5 the memory of old_head is reused
       s.push(5);
     });
     t1.join();
     t2.join();
     std::cout << s << "\n";
-    // std::cout << "-----------------------------\n";
   }
 }
 
