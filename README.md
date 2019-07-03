@@ -57,12 +57,30 @@ The tools will be tested with small C++11 programs (multiple times for dynamic t
     - [Data race on small std::string destruction](./code/data_race/race_destruction_SSO.cpp)
     - [Data race on std::string destruction](./code/data_race/race_destruction_string.cpp)
   - ABA':
-  - Wrong synchronized producer consumer:
-    - TODO: add 1prod-2cons... rel_acq
+    - [ABA' problem in a stack DS](./code/aba/aba.cpp)
+    - [ABA' problem in a stack DS (threads launched at the same time)](./code/aba/aba_sync.cpp)
+    - [ABA' problem in a stack DS (tweaked to provoc it)](./code/aba/aba_detect.cpp)
+  - Wrongly synchronized producer consumer:
+    - [Notification load relaxed](./code/prod_cons/notif_wrong_acq_rel.cpp)
+    - [Notification load relaxed CppMem](./code/prod_cons/notif_wrong_acq_rel.cppmem)
+    - [Notification load relaxed in loop](./code/prod_cons/notif_wrong_acq_rel_2.cpp)
+    - [Notification load relaxed in loop CppMem](./code/prod_cons/notif_wrong_acq_rel_2.cppmem)
+    - [Notification load/store relaxed](./code/prod_cons/notif_relaxed.cpp)
+    - [Notification load/store relaxed CppMem](./code/prod_cons/notif_relaxed.cppmem)
 - **Correct programs**:
-  - Producer consumer
-  - ABA' fixed
+  - Producer consumer:
+    - [Notification sequentially consistant](./code/prod_cons/notif_seq_cst.cpp)
+    - [Notification sequentially consistant CppMem](./code/prod_cons/notif_seq_cst.cppmem)
+    - [Notification acquire release](./code/prod_cons/notif_acq_rel.cpp)
+    - [Notification acquire release CppMem](./code/prod_cons/notif_acq_rel.cppmem)
+  - [ABA' fixed](./code/aba/aba_fixed.cpp)
   - Memory ordering
+    - [store/load sequentially consistant](./code/memory_ordering/store_load_seq_cst.cpp)
+    - [store/load sequentially consistant CppMem](./code/memory_ordering/store_load_seq_cst.cppmem)
+    - [store/load acquire release](./code/memory_ordering/store_load_acq_rel_sem.cpp)
+    - [store/load acquire release CppMem](./code/memory_ordering/store_load_acq_rel_sem.cppmem)
+    - [store/load relaxed](./code/memory_ordering/store_load_relaxed.cpp)
+    - [store/load relaxed CppMem](./code/memory_ordering/store_load_relaxed.cppmem)
 
 ### Valgrind: [DRD](http://valgrind.org/docs/manual/drd-manual.html)
 
@@ -72,7 +90,7 @@ The tools will be tested with small C++11 programs (multiple times for dynamic t
 | Type:              | dynamic on-the-fly            |
 | Plateform:         | Linux/MacOS/Android 32/64bits |
 
-#### Pricipal usage
+#### Principal usage
 
 DRD can detect data races, improper use of POSIX threads, false sharing, deadlock and monitor lock contention. But can't detect wrong lock order.\
 Also DRD support detached threads.
@@ -122,7 +140,7 @@ Check other [options](http://valgrind.org/docs/manual/hg-manual.html#hg-manual.o
 
 ### [ThreadSanitizer (tsan)](https://github.com/google/sanitizers/wiki/ThreadSanitizerCppManual)
 
-ThreadSanitizer as for other sanitiers is integrated in Gcc and Clang
+ThreadSanitizer as for other sanitizers is integrated in Gcc and Clang
 
 ### Intel Inspector ([Free version](https://software.intel.com/en-us/inspector/choose-download#inspector))
 
@@ -148,21 +166,21 @@ There are some other tools not covered here with given reason:
 (SEE: if Intel inspector support lockfree)
 Most tools have poor support of lock-free programming.\
 CppMem can shows us what is going on in lock free but has serious limitations (main function only, no struct, tiny subset of pseudo C supported).\
-ThreadSanitizer can work well in lock-free context but has [not been seriously tested on that specific area](#tsan_faq "TSan supports [...] C++ `<atomic>` operations are supported with llvm libc++ (not very throughly tested, though).") and there are no new paper describing the new Thread Sanitizer (v2). It will be necessary to dig and test real lock free programs with TSan.
+ThreadSanitizer can work well in lock-free context but has [not been seriously tested on that specific area[7]](#tsan_faq "TSan supports [...] C++ `<atomic>` operations are supported with llvm libc++ (not very throughly tested, though).") and there are no new paper describing the new Thread Sanitizer (v2). It will be necessary to dig and test real lock free programs with TSan.
 
 // TODO: don't had time to test with more than 2 threads: eg: multi conso/prod, ...
 
 ## References
 
-- [CppReference](https://cppreference.com/) C++ reference close to the standard but more digest.
-- <a name="cpp_concurrency_in_action"></a>Book *C++ concurrency in action* by Anthony Williams good book about concurrency and lock-free
-- Conference [CppCon 2014 Herb Sutter "Lock-Free Programming (or, Juggling Razor Blades)"](https://www.youtube.com/watch?v=c1gO9aB9nbs)
-- Papers
-  - [Memory Barriers: a Hardware View for Software Hackers](https://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.170.3279), Paul E. Mckenney, 10.1.1.170.3279
-  - [ThreadSanitizer – data race detection in practice](https://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.308.3963), Konstantin Serebryany and Timur Iskhodzhanov, 10.1.1.308.3963
-- Blogs
-  - [ModernsCpp](https://www.modernescpp.com/)
-  - [Jeff Preshing](https://preshing.com/)
-  - [Concurrency Freaks](http://concurrencyfreaks.blogspot.com/)
-- [Awesome lock-free resources](https://github.com/rigtorp/awesome-lockfree)
-- <a name="tsan_faq"></a>[TSan supports [...] C++ `<atomic>` operations are supported with llvm libc++ (not very throughly tested, though).](https://github.com/google/sanitizers/wiki/ThreadSanitizerCppManual#faq)
+1. [CppReference](https://cppreference.com/) C++ reference close to the standard but more digest.
+2. <a name="cpp_concurrency_in_action"></a>Book *C++ concurrency in action* by Anthony Williams good book about concurrency and lock-free
+3. Conference [CppCon 2014 Herb Sutter "Lock-Free Programming (or, Juggling Razor Blades)"](https://www.youtube.com/watch?v=c1gO9aB9nbs)
+4. Papers
+    1. [Memory Barriers: a Hardware View for Software Hackers](https://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.170.3279), Paul E. Mckenney, 10.1.1.170.3279
+    2. [ThreadSanitizer – data race detection in practice](https://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.308.3963), Konstantin Serebryany and Timur Iskhodzhanov, 10.1.1.308.3963
+5. Blogs
+     1. [ModernsCpp](https://www.modernescpp.com/)
+     2. [Jeff Preshing](https://preshing.com/)
+     3. [Concurrency Freaks](http://concurrencyfreaks.blogspot.com/)
+6. [Awesome lock-free resources](https://github.com/rigtorp/awesome-lockfree)
+7. <a name="tsan_faq"></a>[TSan supports [...] C++ `<atomic>` operations are supported with llvm libc++ (not very throughly tested, though).](https://github.com/google/sanitizers/wiki/ThreadSanitizerCppManual#faq)
