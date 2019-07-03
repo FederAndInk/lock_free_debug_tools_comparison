@@ -25,7 +25,7 @@ Unfortunately lock-free programming has drawbacks and is more complicated than l
 
 These tools have been tested on:
 
-- Machine 1(M1): ArchLinux `Linux 5.1.15-arch1-1-ARCH #1 SMP PREEMPT Tue Jun 25 04:49:39 UTC 2019 x86_64 GNU/Linux` (Intel i7-6700HQ (8 cores) 3.5GHz) <a name="m1"></a>
+- <a name="m1"></a>Machine 1(M1): ArchLinux `Linux 5.1.15-arch1-1-ARCH #1 SMP PREEMPT Tue Jun 25 04:49:39 UTC 2019 x86_64 GNU/Linux` (Intel i7-6700HQ (8 cores) 3.5GHz)
   - gcc version 9.1.0 (GCC)
   - clang version 8.0.0 (tags/RELEASE_800/final)
 
@@ -88,7 +88,8 @@ By default DRD [does not check for local variable](#drd_stack_check) (stack).
 
 #### [Options](http://valgrind.org/docs/manual/drd-manual.html#drd-manual.options)
 
-`--check-stack-var=<yes|no> [default: no]`<a name="drd_stack_check"></a>\
+<a name="drd_stack_check"></a>
+`--check-stack-var=<yes|no> [default: no]`\
 Controls whether DRD detects data races on stack variables.
 
 `--segment-merging=<yes|no> [default: yes]`\
@@ -113,7 +114,8 @@ By default Helgrind [checks for local variable](#hg_stack_check) (stack).
 
 #### [Options](http://valgrind.org/docs/manual/hg-manual.html#hg-manual.options)
 
-`--check-stack-refs=no|yes [default: yes]`<a name="hg_stack_check"></a>\
+<a name="hg_stack_check"></a>
+`--check-stack-refs=no|yes [default: yes]`\
 This flag enables you to skip checking for accesses to thread stacks (local variables). This can improve performance, but comes at the cost of missing races on stack-allocated data.
 
 Check other [options](http://valgrind.org/docs/manual/hg-manual.html#hg-manual.options)
@@ -146,14 +148,14 @@ There are some other tools not covered here with given reason:
 (SEE: if Intel inspector support lockfree)
 Most tools have poor support of lock-free programming.\
 CppMem can shows us what is going on in lock free but has serious limitations (main function only, no struct, tiny subset of pseudo C supported).\
-ThreadSanitizer can work well in lock-free context but has [not been seriously tested on that specific area](#tsan_faq) and there are no new paper describing the new Thread Sanitizer (v2). It will be necessary to dig and test real lock free programs with TSan.
+ThreadSanitizer can work well in lock-free context but has [not been seriously tested on that specific area](#tsan_faq "TSan supports [...] C++ `<atomic>` operations are supported with llvm libc++ (not very throughly tested, though).") and there are no new paper describing the new Thread Sanitizer (v2). It will be necessary to dig and test real lock free programs with TSan.
 
 // TODO: don't had time to test with more than 2 threads: eg: multi conso/prod, ...
 
 ## References
 
 - [CppReference](https://cppreference.com/) C++ reference close to the standard but more digest.
-- Book *C++ concurrency in action* by Anthony Williams good book about concurrency and lock-free<a name="cpp_concurrency_in_action"></a>
+- <a name="cpp_concurrency_in_action"></a>Book *C++ concurrency in action* by Anthony Williams good book about concurrency and lock-free
 - Conference [CppCon 2014 Herb Sutter "Lock-Free Programming (or, Juggling Razor Blades)"](https://www.youtube.com/watch?v=c1gO9aB9nbs)
 - Papers
   - [Memory Barriers: a Hardware View for Software Hackers](https://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.170.3279), Paul E. Mckenney, 10.1.1.170.3279
@@ -163,4 +165,4 @@ ThreadSanitizer can work well in lock-free context but has [not been seriously t
   - [Jeff Preshing](https://preshing.com/)
   - [Concurrency Freaks](http://concurrencyfreaks.blogspot.com/)
 - [Awesome lock-free resources](https://github.com/rigtorp/awesome-lockfree)
-- [TSan supports [...] C++ `<atomic>` operations are supported with llvm libc++ (not very throughly tested, though).](https://github.com/google/sanitizers/wiki/ThreadSanitizerCppManual#faq) <a name="tsan_faq"></a>
+- <a name="tsan_faq"></a>[TSan supports [...] C++ `<atomic>` operations are supported with llvm libc++ (not very throughly tested, though).](https://github.com/google/sanitizers/wiki/ThreadSanitizerCppManual#faq)
