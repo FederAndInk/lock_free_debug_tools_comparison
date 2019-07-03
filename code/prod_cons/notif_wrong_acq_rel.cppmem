@@ -1,0 +1,19 @@
+int main()
+{
+  atomic_int done = 0;
+  int payload;
+  {{{ {
+    int d = done.load(memory_order_relaxed);
+    while (d == 0)
+    {
+      d = done.load(memory_order_relaxed);
+    }
+    // use the payload
+    payload;
+  }|||{
+    payload = 19;
+    done.store(1, memory_order_release);
+  } }}}
+
+  return 0;
+}

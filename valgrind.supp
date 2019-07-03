@@ -1,0 +1,23 @@
+{
+   atomic_base<> load
+   Helgrind:Race
+   src:atomic_base.h:419
+}
+
+{
+   atomic_base<> store
+   Helgrind:Race
+   src:atomic_base.h:397
+}
+
+{
+   atomic_base<> load
+   drd:ConflictingAccess
+   src:atomic_base.h:419
+}
+
+{
+   atomic_base<> store
+   drd:ConflictingAccess
+   src:atomic_base.h:397
+}

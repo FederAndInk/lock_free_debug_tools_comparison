@@ -1,0 +1,19 @@
+int main()
+{
+  int done = 0;
+  int payload;
+  {{{ {
+    int d = done;
+    while (d == 0)
+    {
+      d = done;
+    }
+    // use the payload
+    payload;
+  }|||{
+    payload = 19;
+    done = 1;
+  } }}}
+
+  return 0;
+}
