@@ -59,11 +59,18 @@ public:
   friend std::ostream& operator<<(std::ostream& out, stack<T2> const& s);
 };
 
-int main()
+int main(int argc, char* argv[])
 {
+  size_t nb = 1;
+  if (argc >= 2)
+  {
+    // std::cout << "usage: " << argv[0] << " nb [defer=false]\n";
+    nb = std::stoul(argv[1]);
+  }
+
   std::shared_mutex mut;
 
-  for (size_t i = 0; i < 10ul; i++)
+  for (size_t i = 0; i < nb; i++)
   {
     // std::cout << "============================\n";
     stack<int> s;

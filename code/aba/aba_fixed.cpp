@@ -101,16 +101,18 @@ public:
   friend std::ostream& operator<<(std::ostream& out, stack<T2> const& s);
 };
 
-int main()
+int main(int argc, char* argv[])
 {
-  std::shared_mutex mut;
+  size_t nb = 1;
+  if (argc >= 2)
   {
-    std::shared_ptr<node<int>> ptr{};
-    std::cout << "is atomic shared_ptr lockfree ? " << std::boolalpha
-              << std::atomic_is_lock_free(&ptr) << "\n";
+    // std::cout << "usage: " << argv[0] << " nb [defer=false]\n";
+    nb = std::stoul(argv[1]);
   }
 
-  for (size_t i = 0; i < 10ul; i++)
+  std::shared_mutex mut;
+
+  for (size_t i = 0; i < nb; i++)
   {
     // std::cout << "============================\n";
     stack<int> s;

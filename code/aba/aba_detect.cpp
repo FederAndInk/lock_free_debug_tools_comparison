@@ -73,15 +73,14 @@ public:
 int main(int argc, char const* argv[])
 {
   using namespace std::string_literals;
-
-  if (argc < 2)
+  size_t nb = 1;
+  if (argc >= 2)
   {
-    std::cout << "usage: " << argv[0] << " nb [defer=false]\n";
-    std::exit(1);
+    // std::cout << "usage: " << argv[0] << " nb [defer=false]\n";
+    nb = std::stoul(argv[1]);
   }
 
-  size_t nb = std::stoul(argv[1]);
-  bool   defer = false;
+  bool defer = false;
   if (argc == 3)
   {
     defer = argv[2] == "true"s;

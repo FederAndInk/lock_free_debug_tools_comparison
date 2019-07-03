@@ -58,9 +58,16 @@ public:
   friend std::ostream& operator<<(std::ostream& out, stack<T2> const& s);
 };
 
-int main()
+int main(int argc, char* argv[])
 {
-  for (size_t i = 0; i < 1000ul; i++)
+  size_t nb = 1;
+  if (argc >= 2)
+  {
+    // std::cout << "usage: " << argv[0] << " nb [defer=false]\n";
+    nb = std::stoul(argv[1]);
+  }
+
+  for (size_t i = 0; i < nb; i++)
   {
     stack<int> s;
     s.push(1);

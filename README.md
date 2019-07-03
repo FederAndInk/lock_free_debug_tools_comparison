@@ -4,9 +4,14 @@ Concurrency is hard but we can improve speed of programs with it.
 For that it must be well designed. As for all programs it must be with the less bugs as possible, therefore we use and need tools to guide and correct us.
 
 There are many technics to do concurrent programs and at some point we have to synchronize our threads to make them communicate.
-These synchronizations can be effectively made with **locks** (eg: mutexes) or with **lock-free technics** allowing our threads to cooperate enabling maximum concurrency (some thread makes progress every step). This is also more robust, there is less dependencies with other threads (no locks).
+These synchronizations can be effectively made with **locks** (eg: mutexes) or with **lock-free technics**
+allowing our threads to cooperate enabling maximum concurrency (some thread makes progress every step).
+This is also more robust, there is less dependencies with other threads (no locks).
 
-Unfortunately lock-free programming has drawbacks and is more complicated than lock based counterpart. For instance to design lock-free algorithms you must be sure to not break invariants all the time as you can't exclude other threads when updating things. You must be aware of the order in which the data will be visible to other threads. And use atomics to avoid undefined behavior. I will discuss about these problems in the next sections.
+Unfortunately lock-free programming has drawbacks and is more complicated than lock based counterpart.
+For instance to design lock-free algorithms you must be sure to not break invariants all the time as you can't exclude other threads when updating things.
+You must be aware of the order in which the data will be visible to other threads. And use atomics to avoid undefined behavior.
+I will discuss about these problems in the next sections.
 
 ***note**: you can consult [C++ Concurrency in action](#cpp_concurrency_in_action) by Anthony Williams*
 
@@ -92,7 +97,8 @@ The tools will be tested with small C++11 programs (multiple times for dynamic t
 
 #### Principal usage
 
-DRD can detect data races, improper use of POSIX threads, false sharing, deadlock and monitor lock contention. But can't detect wrong lock order.\
+DRD can detect data races, improper use of POSIX threads, false sharing,
+deadlock and monitor lock contention. But can't detect wrong lock order.\
 Also DRD support detached threads.
 
 It is faster than Helgring but can be less precise.
@@ -111,20 +117,51 @@ By default DRD [does not check for local variable](#drd_stack_check) (stack).
 Controls whether DRD detects data races on stack variables.
 
 `--segment-merging=<yes|no> [default: yes]`\
-Segment merging is an algorithm to limit memory usage. Disabling segment merging may improve the accuracy displayed in race reports but can also trigger an out of memory error.
+Segment merging is an algorithm to limit memory usage.
+Disabling segment merging may improve the accuracy displayed in race reports but can also trigger an out of memory error.
 
 `--suppressions=<suppressions-file>`\
-Specify user suppressions file.
+Specify user suppressions file, [example with atomics](./valgrind.supp).
 
 `--gen-suppressions=all`\
 Generate suppression for detected problem. Useful to rapidly suppress problem.
+
+You can also [annotate your code](./code/prod_cons/notif_acq_rel.cpp)
+to help DRD understand happens-before relation on `std::atomic<>`.
+Unfortunately this can silence errors if you get wrong with these, be sure to really understand you code before.
+It may be possible to wrap annotations and check for ordering(std::memory_order) in user defined `atomic` class.
 
 Check other [options](http://valgrind.org/docs/manual/drd-manual.html#drd-manual.options)
 
 #### Tests
 
-// TODO: talk about suppressions (for atomic especially)
-// TODO: talk about user annotations (memory order): but we can get wrong :/ so maybe we can wrap them for atomic load/store and check memory_order ?
+| Sample                                                                                  | Result | Details |
+| --------------------------------------------------------------------------------------- | ------ | ------- |
+| [Simple data race](./code/data_race/data_race_simple.cpp)                               |        |         |
+| [Data race on std::string](./code/data_race/data_race_string.cpp)                       |        |         |
+| [Data race notify](./code/data_race/pseudo_notif.cpp)                                   |        |         |
+| [Data race on std::map](./code/data_race/race_map.cpp)                                  |        |         |
+| [Data race and race condition](./code/data_race/data_race_race_cond.cpp)                |        |         |
+| [Data race on object destruction](./code/data_race/race_destruction.cpp)                |        |         |
+| [Data race on small std::string destruction](./code/data_race/race_destruction_SSO.cpp) |        |         |
+| [Data race on std::string destruction](./code/data_race/race_destruction_string.cpp)    |        |         |
+| [ABA' problem in a stack DS](./code/aba/aba.cpp)                                        |        |         |
+| [ABA' problem in a stack DS Sync](./code/aba/aba_sync.cpp)                              |        |         |
+| [Notification load relaxed](./code/prod_cons/notif_wrong_acq_rel.cpp)                   |        |         |
+| [Notification load relaxed in loop](./code/prod_cons/notif_wrong_acq_rel_2.cpp)         |        |         |
+| [Notification load/store relaxed](./code/prod_cons/notif_relaxed.cpp)                   |        |         |
+| [Notification sequentially consistant](./code/prod_cons/notif_seq_cst.cpp)              |        |         |
+| [Notification acquire release](./code/prod_cons/notif_acq_rel.cpp)                      |        |         |
+| [ABA' fixed](./code/aba/aba_fixed.cpp)                                                  |        |         |
+| [store/load sequentially consistant](./code/memory_ordering/store_load_seq_cst.cpp)     |        |         |
+| [store/load acquire release](./code/memory_ordering/store_load_acq_rel_sem.cpp)         |        |         |
+| [store/load relaxed](./code/memory_ordering/store_load_relaxed.cpp)                     |        |         |
+| [store/load relaxed CppMem](./code/memory_ordering/store_load_relaxed.cppmem)           |        |         |
+
+- ✔: The tool has correctly detected the error or correctly reported no error
+- ✘: The tool has reported a false error
+- ?: The tool has not reported the error
+- !: The tool has crashed
 
 ### Valgrind: [Helgrind](http://valgrind.org/docs/manual/hg-manual.html)
 
@@ -158,7 +195,8 @@ There are some other tools not covered here with given reason:
 
 ### Notes
 
-- To initialize something in concurrency (double checked locking) think about using [static local variable](https://en.cppreference.com/w/cpp/language/storage_duration#Static_local_variables)
+- To initialize something in concurrency (double checked locking)
+think about using [static local variable](https://en.cppreference.com/w/cpp/language/storage_duration#Static_local_variables)
 - **Do not use [volatile](https://github.com/google/sanitizers/wiki/ThreadSanitizerAboutRaces#volatile)** for synchronization!
 
 ## Summary
