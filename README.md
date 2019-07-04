@@ -380,11 +380,10 @@ You can see [output samples](./outputs/helgrind.md).
 
 ### [ThreadSanitizer (tsan)](https://github.com/google/sanitizers/wiki/ThreadSanitizerCppManual)
 
-|                              |                                 |
-| ---------------------------- | ------------------------------- |
-| Type:                        | dynamic on-the-fly              |
-| [Plateform][tsan_plateform]: | Linux/MacOS/Android 64bits only |
-[tsan_plateform]: https://github.com/google/sanitizers/wiki/ThreadSanitizerCppManual#supported-platforms
+|                                                                                                      |                                 |
+| ---------------------------------------------------------------------------------------------------- | ------------------------------- |
+| Type:                                                                                                | dynamic on-the-fly              |
+| [Plateform](https://github.com/google/sanitizers/wiki/ThreadSanitizerCppManual#supported-platforms): | Linux/MacOS/Android 64bits only |
 
 #### ThreadSanitizer principal usage
 
