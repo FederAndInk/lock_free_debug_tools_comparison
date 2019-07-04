@@ -67,7 +67,6 @@ See an [example](./code/data_race/data_race_simple.cpp).
 
 A race condition is a situation in which the result of an operation depends on the interleaving of certain individual operations.
 
-
 In red the data races, in green the race conditions ([code](./code/data_race/data_race_race_cond.cpp)):
 
 ![data race and race condition](images/data_race_race_cond.png)
@@ -76,27 +75,26 @@ In red the data races, in green the race conditions ([code](./code/data_race/dat
 
 Memory reordering can lead to a completely different program from the source code. This is due to compiler optimizations but also during runtime the processor may reorder stores and loads.
 
-For example, can you guess possible outputs of this [program](./code/memory_ordering/store_load_relaxed.cpp) ? (Supposing that operations on x and y are atomic):
+For example, can you guess possible outputs of this [program](./code/memory_ordering/store_load_relaxed.cpp) ?
+(Suppose operations on x and y atomic):
 
 ```cpp
-int main()
-{
-    int x = 0;
-    int y = 0;
-    int r1;
-    int r2;
-    std::thread      t1([&] {
-      y = 1;  // #1
-      r1 = x; // #2
-    });
-    std::thread      t2([&] {
-      x = 1;  // #3
-      r2 = y; // #4
-    });
-    t1.join();
-    t2.join();
-    std::cout << "r1: " << r1 << ", r2: " << r2 << "\n";
-  }
+int main() {
+  int x = 0;
+  int y = 0;
+  int r1;
+  int r2;
+  std::thread      t1([&] {
+    y = 1;  // #1
+    r1 = x; // #2
+  });
+  std::thread      t2([&] {
+    x = 1;  // #3
+    r2 = y; // #4
+  });
+  t1.join();
+  t2.join();
+  std::cout << "r1: " << r1 << ", r2: " << r2 << "\n";
   return 0;
 }
 
@@ -114,6 +112,9 @@ to prevent memory reordering use barrier or std::atomic with memory_order
 
 ### Livelock
 
+Livelock, like deadlock, is when one thread is waiting for
+another, which is in turn waiting for the former.
+The difference is the wait is non blocking but active such as spin-lock.
 
 ### Starvation
 
@@ -135,7 +136,7 @@ ABA can appear in lock-free program when using CAS (compare and swap),
 Multiple solutions exist:
 
 - Double length CAS with modification counter
-- Reference counter ([shared_ptr with atomic](./code/aba/aba_fixed.cpp), not necessarilly lock-free but portable C++11, simplified in C++20 `std::atomic<shared_ptr<>>`)
+- Reference counter ([shared_ptr with atomic](./code/aba/aba_fixed.cpp), not necessarily lock-free but portable C++11, simplified in C++20 `std::atomic<shared_ptr<>>`)
 - Hazard pointers
 - lazy garbadge collection
 - garbage collector
@@ -164,7 +165,9 @@ These tools have been tested on:
 
 The tools will be tested with different options and differences will be reported.
 
-The tools will be tested with small C++11 programs (multiple times for dynamic tools), focused on lock-free:
+The tools will be tested with small C++ programs (multiple times for dynamic tools), focused on lock-free.\
+
+Tests list:
 
 - **Programs with bugs**:
   - Data races
@@ -442,8 +445,8 @@ You can use `std::thread` or you could use this syntax:
 
 ![how to explore results cppmem](images/cppmem/main/cppmem_graph.png)
 
-You could rapidly see on top informations (races, locks, ...).\
-Then the graph describing one possible execution.
+You could rapidly see on top global information about the current possible execution (races, locks, ...).\
+Then the graph describing that execution.
 
 - W: write
 - R: read
@@ -486,7 +489,7 @@ There are some other tools not covered here with given reason:
 
 - [Other sanitizers](https://github.com/google/sanitizers/wiki): these must be useful to catch other bugs not related to concurrency, check it out.
 - [Relacy race detector](http://www.1024cores.net/home/relacy-race-detector):
-  The code must be instrumented (unit test) and compiled C++03 or C++11 but `std::*` must be changed by `rl::*` [see exemple](./code/)
+  The code must be instrumented (unit test) and compiled C++03 or C++11 but `std::*` must be changed by `rl::*` [see example](./code/)
 - [CDSChecker](http://plrg.eecs.uci.edu/software_page/42-2/): poor support of C++, old.
 - [IFRit](https://github.com/blucia0a/IFRit): too old, based on old llvm/clang
 
@@ -500,12 +503,26 @@ think about using [static local variable](https://en.cppreference.com/w/cpp/lang
 
 (SEE: if Intel inspector support lockfree)
 Most tools have poor support of lock-free programming.\
-CppMem can shows us what is going on in lock free but has serious limitations (main function only, no struct, tiny subset of pseudo C supported).\
-ThreadSanitizer can work well in lock-free context but has [not been seriously tested on that specific area[7]](#tsan_faq "TSan supports [...] C++ `<atomic>` operations are supported with llvm libc++ (not very throughly tested, though).") and there are no new paper describing the new Thread Sanitizer (v2). It will be necessary to dig and test real lock free programs with TSan.
+CppMem can shows us what is going on in lock free but has serious limitations (no struct, tiny subset of pseudo C supported).
 
-// TODO: don't had time to test with more than 2 threads: eg: multi conso/prod, ...
+ThreadSanitizer can work well in lock-free context but has [not been seriously tested on that specific area[7]](#tsan_faq "TSan supports [...] C++ `<atomic>` operations are supported with llvm libc++ (not very thoroughly tested, though).") and there are no paper describing the new Thread Sanitizer (v2).
 
-// TODO: don't had time to test on other machines (ARM, verimag)
+We had ideas for further testing, but due to lack of time we don't have tested:
+
+- programs with more than 2 threads
+- real examples
+  - boost lock-free
+  - TBB
+  - PPLP (program develop at Verimag)
+- More benchmark (on real examples)
+  - Execution time
+  - Memory overhead
+- Other hardware:
+  - ARM64
+  - Verimag PC // TODO: see if we can test on verimag
+
+Finally it would be interesting to do further testing on real lock free programs with TSan, as this haven't been done,
+in order to potentially complete TSan specifically for lock-free programs.
 
 ## References
 
@@ -520,4 +537,4 @@ ThreadSanitizer can work well in lock-free context but has [not been seriously t
      2. [Jeff Preshing](https://preshing.com/)
      3. [Concurrency Freaks](http://concurrencyfreaks.blogspot.com/)
 6. [Awesome lock-free resources](https://github.com/rigtorp/awesome-lockfree)
-7. <a name="tsan_faq"></a>[TSan supports [...] C++ `<atomic>` operations are supported with llvm libc++ (not very throughly tested, though).](https://github.com/google/sanitizers/wiki/ThreadSanitizerCppManual#faq)
+7. <a name="tsan_faq"></a>[TSan supports [...] C++ `<atomic>` operations are supported with llvm libc++ (not very thoroughly tested, though).](https://github.com/google/sanitizers/wiki/ThreadSanitizerCppManual#faq)
