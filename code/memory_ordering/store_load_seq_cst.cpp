@@ -15,8 +15,8 @@ int main(int argc, char* argv[])
 
   for (size_t i = 0; i < nb; i++)
   {
-    std::atomic<int> x = 0;
-    std::atomic<int> y = 0;
+    std::atomic<int> x{0};
+    std::atomic<int> y{0};
     int              r1;
     int              r2;
     std::unique_lock lck(mut);
