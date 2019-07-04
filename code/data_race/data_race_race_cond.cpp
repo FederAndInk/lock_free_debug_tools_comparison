@@ -17,19 +17,28 @@ void transferMoney(int amount, Account& from, Account& to)
   }
 }
 
-int main()
+int main(int argc, char* argv[])
 {
-  Account account1;
-  Account account2;
+  size_t nb = 1;
+  if (argc >= 2)
+  {
+    nb = std::stoul(argv[1]);
+  }
 
-  std::thread thr1(transferMoney, 50, std::ref(account1), std::ref(account2));
-  // race condition: output can change
-  // depending on the execution order of thr1 and thr2
-  std::thread thr2(transferMoney, 130, std::ref(account2), std::ref(account1));
+  for (size_t i = 0; i < nb; i++)
+  {
+    Account account1;
+    Account account2;
 
-  thr1.join();
-  thr2.join();
+    std::thread thr1(transferMoney, 50, std::ref(account1), std::ref(account2));
+    // race condition: output can change
+    // depending on the execution order of thr1 and thr2
+    std::thread thr2(transferMoney, 130, std::ref(account2), std::ref(account1));
 
-  std::cout << "account1.balance: " << account1.balance << "\n";
-  std::cout << "account2.balance: " << account2.balance << "\n";
+    thr1.join();
+    thr2.join();
+
+    std::cout << "account1.balance: " << account1.balance << "\n";
+    std::cout << "account2.balance: " << account2.balance << "\n";
+  }
 }

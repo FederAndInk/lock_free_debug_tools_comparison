@@ -1,4 +1,6 @@
+#include <cstdlib>
 #include <relacy/relacy_std.hpp>
+#include <string>
 
 // template parameter '2' is number of threads
 struct race_test : rl::test_suite<race_test, 2>
@@ -36,7 +38,16 @@ struct race_test : rl::test_suite<race_test, 2>
   void invariant() {}
 };
 
-int main()
+int main(int argc, char* argv[])
 {
-  rl::simulate<race_test>();
+  size_t nb = 1;
+  if (argc >= 2)
+  {
+    nb = std::atoi(argv[1]);
+  }
+
+  for (size_t i = 0; i < nb; i++)
+  {
+    rl::simulate<race_test>();
+  }
 }

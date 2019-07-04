@@ -10,33 +10,41 @@
 #include <string>
 #include <thread>
 
-int main()
+int main(int argc, char* argv[])
 {
-  bool               done{false};
-  std::optional<int> payload;
-  std::thread        t1([&] {
-    while (!done) // #1 data race with write on #2
-    {
-    }
+  size_t nb = 1;
+  if (argc >= 2)
+  {
+    nb = std::stoul(argv[1]);
+  }
+
+  for (size_t i = 0; i < nb; i++)
+  {
+    bool               done{false};
+    std::optional<int> payload;
+    std::thread        t1([&] {
+      while (!done) // #1 data race with write on #2
+      {
+      }
 #ifdef USE_VALGRIND
-    ANNOTATE_HAPPENS_AFTER(&done);
+      ANNOTATE_HAPPENS_AFTER(&done);
 #endif
-    // use the payload
-    if (payload)
-    {
-      std::cout << *payload << "\n";
-    }
-  });
-  std::thread t2([&] {
-    payload = 19;
+      // use the payload
+      if (payload)
+      {
+        std::cout << *payload << "\n";
+      }
+    });
+    std::thread t2([&] {
+      payload = 19;
 #ifdef USE_VALGRIND
-    ANNOTATE_HAPPENS_BEFORE(&done);
+      ANNOTATE_HAPPENS_BEFORE(&done);
 #endif
 
-    done = true; // #2
-  });
-  t1.join();
-  t2.join();
-
+      done = true; // #2
+    });
+    t1.join();
+    t2.join();
+  }
   return 0;
 }
