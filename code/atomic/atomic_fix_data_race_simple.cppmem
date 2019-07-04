@@ -3,9 +3,9 @@ int main()
 {
   atomic_int x = 0;
   {{{
-    x.store(2, memory_order_relaxed);
+    x.store(2, memory_order_seq_cst);
   |||
-    x.load(memory_order_relaxed);
+    x.load(memory_order_seq_cst);
   }}}
 
   return 0;

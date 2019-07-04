@@ -101,6 +101,9 @@ add_exe_sans(race_destruction_SSO
 add_exe_sans(
   atomic_fix_data_race_simple
   ./atomic/atomic_fix_data_race_simple.cpp)
+add_exe_sans(
+  atomic_fix_data_race_relaxed
+  ./atomic/atomic_fix_data_race_relaxed.cpp)
 
 add_exe_sans(aba ./aba/aba.cpp)
 add_exe_sans(aba_detect ./aba/aba_detect.cpp)

@@ -167,6 +167,13 @@ The tools will be tested with different options and differences will be reported
 
 The tools will be tested with small C++ programs (multiple times for dynamic tools), focused on lock-free.\
 
+Each **test with error** will be run on a loop, for the first run it will not loop.
+Then if the tool does not detect the error, we will try to loop 10 times and try again with 100 times and 1000 times.
+
+Each **correct test** will be run on a loop, we will do 4 run: no loop, loop 10 times, loop 100 times, loop 1000 times.
+For static tools we won't use loops of course
+
+
 Tests list:
 
 - **Programs with bugs**:
@@ -193,6 +200,11 @@ Tests list:
     - [Notification load/store relaxed](./code/prod_cons/notif_relaxed.cpp)
     - [Notification load/store relaxed CppMem](./code/prod_cons/notif_relaxed.cppmem)
 - **Correct programs**:
+  - Atomic:
+    - [Fix simple data race](./code/atomic/atomic_fix_data_race_simple.cpp)
+    - [Fix simple data race CppMem](./code/atomic/atomic_fix_data_race_simple.cppmem)
+    - [Fix simple data race relaxed](./code/atomic/atomic_fix_data_race_relaxed.cpp)
+    - [Fix simple data race relaxed CppMem](./code/atomic/atomic_fix_data_race_relaxed.cppmem)
   - Producer consumer:
     - [Notification sequentially consistant](./code/prod_cons/notif_seq_cst.cpp)
     - [Notification sequentially consistant CppMem](./code/prod_cons/notif_seq_cst.cppmem)
@@ -374,13 +386,14 @@ It also [support `std::atomic<>`](https://github.com/google/sanitizers/wiki/Thre
 ThreadSanitizer as for other sanitizers is integrated in Gcc and Clang
 
 1. Compile with `-fsanitize=thread` (and with `-g` for debug info)
-2. Run normally: `./program`
+2. Run normally: `./program`, you could use [./path_colorizer.sh](./path_colorizer.sh) to colorize paths to source.
 3. you can pass options at runtime by [setting TSAN_OPTIONS variable](https://github.com/google/sanitizers/wiki/ThreadSanitizerFlags#runtime-flags)
 
 #### [ThreadSanitizer options](https://github.com/google/sanitizers/wiki/ThreadSanitizerFlags)
 
-There is [compile time options](https://github.com/google/sanitizers/wiki/ThreadSanitizerFlags#compiler-flags-llvm-specific).
-There is also options that can be [passed at runtime](https://github.com/google/sanitizers/wiki/ThreadSanitizerFlags#runtime-flags) avoiding recompilation.
+There is [compile time options](https://github.com/google/sanitizers/wiki/ThreadSanitizerFlags#compiler-flags-llvm-specific).\
+There is also options that can be [passed at runtime](https://github.com/google/sanitizers/wiki/ThreadSanitizerFlags#runtime-flags) avoiding recompilation.\
+And also [common flags](https://github.com/google/sanitizers/wiki/SanitizerCommonFlags) with other sanitizer.
 
 It is also possible to annotate code or [suppress warnings](https://github.com/google/sanitizers/wiki/ThreadSanitizerFlags#blacklist-format).
 
@@ -398,10 +411,13 @@ You can see [output samples](./outputs/tsan.md).
 
 #### Intel Inspector principal usage
 
+Intel Inspector can detect data race, deadlock, it partially support atomics (MSVC/Intel icc/Clang).
 
+But it has some [limitations](https://software.intel.com/en-us/intel-inspector-2018-release-notes-issues-and-limitations),
+especially C++11 Atomics on Clang/Gcc.
 
 1. Compile normally (and with `-g` for debug info)
-2. Run intel inspector
+2. Run intel inspector or inspxe-cl command line
 
 #### [Intel Inspector options](https://software.intel.com/en-us/inspector/documentation/featured-documentation)
 
