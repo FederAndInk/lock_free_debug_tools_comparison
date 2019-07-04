@@ -110,6 +110,11 @@ to prevent memory reordering use barrier or std::atomic with memory_order
 */
 ```
 
+Here is the reference of [C++ memory ordering](https://en.cppreference.com/w/cpp/atomic/memory_order) it explain with example different type of memory ordering.
+
+I recommend you to read [memory ordering at compile time](https://preshing.com/20120625/memory-ordering-at-compile-time/) by Jeff Preshing.
+And also [memory barriers are like source control operations](https://preshing.com/20120710/memory-barriers-are-like-source-control-operations/).
+
 ### Livelock
 
 Livelock, like deadlock, is when one thread is waiting for
@@ -172,7 +177,6 @@ Then if the tool does not detect the error, we will try to loop 10 times and try
 
 Each **correct test** will be run on a loop, we will do 4 run: no loop, loop 10 times, loop 100 times, loop 1000 times.
 For static tools we won't use loops of course
-
 
 Tests list:
 
@@ -279,36 +283,41 @@ It may be possible to wrap annotations and check for ordering(std::memory_order)
 Launch:
 
 ```bash
-valgrind --gen-suppressions=all --suppressions=valgrind.supp --tool=drd ./prog
+valgrind --gen-suppressions=all --suppressions=valgrind.supp --check-stack-var=yes --tool=drd ./prog
 ```
 
-| Sample                                                                                  | Result | Details |
-| --------------------------------------------------------------------------------------- | ------ | ------- |
-| [Simple data race](./code/data_race/data_race_simple.cpp)                               |        |         |
-| [Data race on std::string](./code/data_race/data_race_string.cpp)                       |        |         |
-| [Data race notify](./code/data_race/pseudo_notif.cpp)                                   |        |         |
-| [Data race on std::map](./code/data_race/race_map.cpp)                                  |        |         |
-| [Data race and race condition](./code/data_race/data_race_race_cond.cpp)                |        |         |
-| [Data race on object destruction](./code/data_race/race_destruction.cpp)                |        |         |
-| [Data race on small std::string destruction](./code/data_race/race_destruction_SSO.cpp) |        |         |
-| [Data race on std::string destruction](./code/data_race/race_destruction_string.cpp)    |        |         |
-| [ABA' problem in a stack DS](./code/aba/aba.cpp)                                        |        |         |
-| [ABA' problem in a stack DS Sync](./code/aba/aba_sync.cpp)                              |        |         |
-| [Notification load relaxed](./code/prod_cons/notif_wrong_acq_rel.cpp)                   |        |         |
-| [Notification load relaxed in loop](./code/prod_cons/notif_wrong_acq_rel_2.cpp)         |        |         |
-| [Notification load/store relaxed](./code/prod_cons/notif_relaxed.cpp)                   |        |         |
-| [Notification sequentially consistant](./code/prod_cons/notif_seq_cst.cpp)              |        |         |
-| [Notification acquire release](./code/prod_cons/notif_acq_rel.cpp)                      |        |         |
-| [ABA' fixed](./code/aba/aba_fixed.cpp)                                                  |        |         |
-| [store/load sequentially consistant](./code/memory_ordering/store_load_seq_cst.cpp)     |        |         |
-| [store/load acquire release](./code/memory_ordering/store_load_acq_rel_sem.cpp)         |        |         |
-| [store/load relaxed](./code/memory_ordering/store_load_relaxed.cpp)                     |        |         |
-| [store/load relaxed CppMem](./code/memory_ordering/store_load_relaxed.cppmem)           |        |         |
+| Sample with errors                                                                 |  Gcc  | Clang | Clang libc++ | Details                                                        |
+| ---------------------------------------------------------------------------------- | :---: | :---: | :----------: | -------------------------------------------------------------- |
+| [Simple data race](./code/data_race/data_race_simple.cpp)                          |   ✔   |   ✔   |      ✔       | [more](./outputs/drd.md#Simple-data-race)                      |
+| [Data race on std::string](./code/data_race/data_race_string.cpp)                  |   ✔   |   ✔   |      ✔       | [more](./outputs/drd.md#String-data-race)                      |
+| [Data race notify](./code/data_race/pseudo_notif.cpp)                              |   ✔   |   ✔   |      ✔       | [more](./outputs/drd.md#Pseudo-notification)                   |
+| [Data race on std::map](./code/data_race/race_map.cpp)                             |   ✔   |   ✔   |      ✔       | [more](./outputs/drd.md#stdmap-data-race)                      |
+| [Data race and race condition](./code/data_race/data_race_race_cond.cpp)           |   ✔   |   ✔   |      ✔       | [more](./outputs/drd.md#Data-race-vs-race-condition)           |
+| [Data race on object destruction](./code/data_race/race_destruction.cpp)           |   ✘   |   ✘   |      ✘       | [more](./outputs/drd.md#Data-race-on-object-destruction)       |
+| [Data race on small string destruction](./code/data_race/race_destruction_SSO.cpp) |   ✘   |   ✘   |      ✘       | [more](./outputs/drd.md#Data-race-on-small-string-destruction) |
+| [Data race on string destruction](./code/data_race/race_destruction_string.cpp)    |   ✘   |   ✘   |      ✘       | [more](./outputs/drd.md#Data-race-on-string-destruction)       |
+| [ABA' problem in a stack DS](./code/aba/aba.cpp)                                   |   ✘   |   ✘   |      ✘       | [more](./outputs/drd.md#ABA)                                   |
+| [ABA' problem in a stack DS Sync](./code/aba/aba_sync.cpp)                         |  ✔10  |  ✔10  |     ✔10      | [more](./outputs/drd.md#ABA-synchronized)                      |
+| [Notification load relaxed](./code/prod_cons/notif_wrong_acq_rel.cpp)              |  ✔✘   |  ✔✘   |      ✔✘      | [more](./outputs/drd.md#Notification-load-relaxed)             |
+| [Notification load relaxed in loop](./code/prod_cons/notif_wrong_acq_rel_2.cpp)    |  ✔✘   |  ✔✘   |      ✔✘      | [more](./outputs/drd.md#Notification-load-relaxed-in-loop)     |
+| [Notification load/store relaxed](./code/prod_cons/notif_relaxed.cpp)              |  ✔✘   |  ✔✘   |      ✔✘      | [more](./outputs/drd.md#Notification-loadstore-relaxed)        |
+
+| Correct sample                                                                      |  Gcc  | Clang | Clang libc++ | Details                                               |
+| ----------------------------------------------------------------------------------- | :---: | :---: | :----------: | ----------------------------------------------------- |
+| [Simple data race fix](./code/atomic/atomic_fix_data_race_simple.cpp)               |  ✔?   |   ✔   |      ✔       | [more](./outputs/drd.md#Data-race-atomic-fix)         |
+| [Simple data race fix relaxed](./code/atomic/atomic_fix_data_race_relaxed.cpp)      |  ✔?   |  ✔?   |      ✔?      | [more](./outputs/drd.md#Data-race-atomic-fix-relaxed) |
+| [Notification sequentially consistant](./code/prod_cons/notif_seq_cst.cpp)          |  ✔✘   |  ✔✘   |      ✔✘      | [more](./outputs/drd.md#Notification-fix)             |
+| [Notification acquire release](./code/prod_cons/notif_acq_rel.cpp)                  |  ✔✘   |  ✔✘   |      ✔✘      | [more](./outputs/drd.md#Notification-fix)             |
+| [ABA' fixed](./code/aba/aba_fixed.cpp)                                              |   ✔   |   ✔   |      ✔       | [more](./outputs/drd.md#ABA-fix)                      |
+| [store/load sequentially consistant](./code/memory_ordering/store_load_seq_cst.cpp) |   .   |   .   |      .       | DRD does nothing on that, not the purpose of it       |
+| [store/load acquire release](./code/memory_ordering/store_load_acq_rel_sem.cpp)     |   .   |   .   |      .       | DRD does nothing on that, not the purpose of it       |
+| [store/load relaxed](./code/memory_ordering/store_load_relaxed.cpp)                 |   .   |   .   |      .       | DRD does nothing on that, not the purpose of it       |
 
 - ✔: The tool has correctly detected the error or correctly reported no error
-- ✘: The tool has reported a false error
-- ?: The tool has not reported the error
+- ?: The tool has reported an error when there was no error
+- ✘: The tool has not reported the error
 - !: The tool has crashed
+- \<n> if a number is specified it means that the error is manifesting when looping n times.
 
 You can see [output samples](./outputs/drd.md).
 
@@ -488,6 +497,8 @@ We have to convert the C++ into CppMem syntax, some test aren't there because Cp
 | --------------------------------------------------------------------------------------------- | ------ | ------- |
 | [Simple data race CppMem](./code/data_race/data_race_simple.cppmem)                           |        |         |
 | [Data race on notify CppMem](./code/data_race/pseudo_notif.cppmem)                            |        |         |
+| [Fix simple data race CppMem](./code/atomic/atomic_fix_data_race_simple.cppmem)               |        |         |
+| [Fix simple data race relaxed CppMem](./code/atomic/atomic_fix_data_race_relaxed.cppmem)      |        |         |
 | [Notification load relaxed CppMem](./code/prod_cons/notif_wrong_acq_rel.cppmem)               |        |         |
 | [Notification load relaxed in loop CppMem](./code/prod_cons/notif_wrong_acq_rel_2.cppmem)     |        |         |
 | [Notification load/store relaxed CppMem](./code/prod_cons/notif_relaxed.cppmem)               |        |         |
@@ -504,6 +515,7 @@ You can see [output samples](./outputs/cppmem.md).
 There are some other tools not covered here with given reason:
 
 - [Other sanitizers](https://github.com/google/sanitizers/wiki): these must be useful to catch other bugs not related to concurrency, check it out.
+- Debuggers (gdb, ...) of course, use it to control interleaving of threads or to explore the execution near detected errors.
 - [Relacy race detector](http://www.1024cores.net/home/relacy-race-detector):
   The code must be instrumented (unit test) and compiled C++03 or C++11 but `std::*` must be changed by `rl::*` [see example](./code/)
 - [CDSChecker](http://plrg.eecs.uci.edu/software_page/42-2/): poor support of C++, old.
@@ -535,7 +547,7 @@ We had ideas for further testing, but due to lack of time we don't have tested:
   - Memory overhead
 - Other hardware:
   - ARM64
-  - Verimag PC // TODO: see if we can test on verimag
+  - Verimag PC // SEE: if we can test on verimag
 
 Finally it would be interesting to do further testing on real lock free programs with TSan, as this haven't been done,
 in order to potentially complete TSan specifically for lock-free programs.
