@@ -1,7 +1,8 @@
 # Lock free debug tools
 
-Concurrency is hard but we can improve speed of programs with it.
-For that it must be well designed. As for all programs it must be with the less bugs as possible, therefore we use and need tools to guide and correct us.
+Concurrency is hard but can improve speed of programs.
+For that it must be well designed. As for all programs it must be with the less bugs as possible,
+therefore we use and need tools to guide and correct us.
 
 There are many technics to do concurrent programs and at some point we have to synchronize our threads to make them communicate.
 These synchronizations can be effectively made with **locks** (eg: mutexes) or with **lock-free technics**
@@ -13,12 +14,21 @@ For instance to design lock-free algorithms you must be sure to not break invari
 You must be aware of the order in which the data will be visible to other threads. And use atomics to avoid undefined behavior.
 I will discuss about these problems in the next sections.
 
-***note**: you can consult [C++ Concurrency in action](#cpp_concurrency_in_action) by Anthony Williams*
+If you want an introduction to lock-free programming I would recommend you to read [this article](https://preshing.com/20120612/an-introduction-to-lock-free-programming/) by Jeff Preshing.
+And an in-depth book about concurrency: [C++ Concurrency in action](#cpp_concurrency_in_action) by Anthony Williams
+See [references](#References) for more.
 
-Content:
+Table of Contents:
 
 - [Lock free debug tools](#Lock-free-debug-tools)
   - [Problems in lock-free programming](#Problems-in-lock-free-programming)
+    - [Data race](#Data-race)
+    - [Race Condition](#Race-Condition)
+    - [Memory reordering](#Memory-reordering)
+    - [Livelock](#Livelock)
+    - [Starvation](#Starvation)
+    - [false sharing](#false-sharing)
+    - [ABA' problem](#ABA-problem)
   - [Tools](#Tools)
     - [Valgrind: DRD](#Valgrind-DRD)
       - [DRD principal usage](#DRD-principal-usage)
@@ -47,12 +57,89 @@ Content:
 
 ## Problems in lock-free programming
 
-- Data race
-- Race Condition
-- Memory reordering
-- Livelock
-- false sharing
-- ABA' problem
+### Data race
+
+A data race is a situation in which at least two threads access a shared variable at the same time (unsynchronized), and at least one thread tries to modify the variable.
+
+See an [example](./code/data_race/data_race_simple.cpp).
+
+### Race Condition
+
+A race condition is a situation in which the result of an operation depends on the interleaving of certain individual operations.
+
+
+In red the data races, in green the race conditions ([code](./code/data_race/data_race_race_cond.cpp)):
+
+![data race and race condition](images/data_race_race_cond.png)
+
+### Memory reordering
+
+Memory reordering can lead to a completely different program from the source code. This is due to compiler optimizations but also during runtime the processor may reorder stores and loads.
+
+For example, can you guess possible outputs of this [program](./code/memory_ordering/store_load_relaxed.cpp) ? (Supposing that operations on x and y are atomic):
+
+```cpp
+int main()
+{
+    int x = 0;
+    int y = 0;
+    int r1;
+    int r2;
+    std::thread      t1([&] {
+      y = 1;  // #1
+      r1 = x; // #2
+    });
+    std::thread      t2([&] {
+      x = 1;  // #3
+      r2 = y; // #4
+    });
+    t1.join();
+    t2.join();
+    std::cout << "r1: " << r1 << ", r2: " << r2 << "\n";
+  }
+  return 0;
+}
+
+/* it could be:
+r1: 0, r2: 1
+r1: 1, r2: 0
+r1: 1, r2: 1
+right ? but this could also be:
+r1: 0, r2: 0
+it can arise if #1 #2 or #3 #4 are reordered (store/load reorder)
+to prevent memory reordering use barrier or std::atomic with memory_order
+(by default it is sequentially consistant)
+*/
+```
+
+### Livelock
+
+
+### Starvation
+
+Starvation is when some thread(s) access shared part frequently preventing other thread(s) to make progress\
+Lock-free program does not necessarily prevent starvation.
+
+### false sharing
+
+False sharing is when 2 variable accessed frequently be 2 different threads are on the same cache line,
+thus the threads must acquire exclusivity of that cache line preventing real parallelism.
+
+### ABA' problem
+
+ABA can appear in lock-free program when using CAS (compare and swap),
+[example](./code/aba/aba.cpp) or [example trying to provoc ABA](./code/aba/aba_detect.cpp)
+
+![aba problem](images/pop_aba.gif)
+
+Multiple solutions exist:
+
+- Double length CAS with modification counter
+- Reference counter ([shared_ptr with atomic](./code/aba/aba_fixed.cpp), not necessarilly lock-free but portable C++11, simplified in C++20 `std::atomic<shared_ptr<>>`)
+- Hazard pointers
+- lazy garbadge collection
+- garbage collector
+- Not freeing memory
 
 ***note** lock-free programs are not necessarily starvation free*
 
@@ -417,6 +504,7 @@ CppMem can shows us what is going on in lock free but has serious limitations (m
 ThreadSanitizer can work well in lock-free context but has [not been seriously tested on that specific area[7]](#tsan_faq "TSan supports [...] C++ `<atomic>` operations are supported with llvm libc++ (not very throughly tested, though).") and there are no new paper describing the new Thread Sanitizer (v2). It will be necessary to dig and test real lock free programs with TSan.
 
 // TODO: don't had time to test with more than 2 threads: eg: multi conso/prod, ...
+
 // TODO: don't had time to test on other machines (ARM, verimag)
 
 ## References

@@ -5,7 +5,14 @@ find_package(Boost REQUIRED
              COMPONENTS atomic thread)
 
 set(USE_LIBCXX OFF CACHE BOOL "using libc++")
-set(OPTIMIZATION_LEVEL 0)
+set(OPTIMIZATION_LEVEL 0
+    CACHE STRING "optimization")
+set_property(CACHE OPTIMIZATION_LEVEL
+             PROPERTY STRINGS
+                      0
+                      1
+                      2
+                      3)
 
 message("USE_LIBCXX: " ${USE_LIBCXX})
 message("OPTIMIZATION_LEVEL: "

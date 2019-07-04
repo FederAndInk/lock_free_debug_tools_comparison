@@ -2,8 +2,14 @@
 
 if [ $(command -v g++) ]; then
   mkdir build_gcc
-  cd build
+  cd build_gcc
   cmake .. -DCMAKE_CXX_COMPILER=g++
+  cmake --build . -j$(nproc --all)
+  cd ..
+
+  mkdir build_gcc_O2
+  cd build_gcc_O2
+  cmake .. -DCMAKE_CXX_COMPILER=g++ -DOPTIMIZATION_LEVEL=2
   cmake --build . -j$(nproc --all)
   cd ..
 fi
