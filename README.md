@@ -15,6 +15,36 @@ I will discuss about these problems in the next sections.
 
 ***note**: you can consult [C++ Concurrency in action](#cpp_concurrency_in_action) by Anthony Williams*
 
+Content:
+
+- [Lock free debug tools](#Lock-free-debug-tools)
+  - [Problems in lock-free programming](#Problems-in-lock-free-programming)
+  - [Tools](#Tools)
+    - [Valgrind: DRD](#Valgrind-DRD)
+      - [DRD principal usage](#DRD-principal-usage)
+      - [DRD options](#DRD-options)
+      - [DRD tests](#DRD-tests)
+    - [Valgrind: Helgrind](#Valgrind-Helgrind)
+      - [Helgrind principal usage](#Helgrind-principal-usage)
+      - [Helgrind options](#Helgrind-options)
+      - [Helgrind tests](#Helgrind-tests)
+    - [ThreadSanitizer (tsan)](#ThreadSanitizer-tsan)
+      - [ThreadSanitizer principal usage](#ThreadSanitizer-principal-usage)
+      - [ThreadSanitizer options](#ThreadSanitizer-options)
+      - [ThreadSanitizer tests](#ThreadSanitizer-tests)
+    - [Intel Inspector (Free version)](#Intel-Inspector-Free-version)
+      - [Intel Inspector principal usage](#Intel-Inspector-principal-usage)
+      - [Intel Inspector options](#Intel-Inspector-options)
+      - [Intel Inspector tests](#Intel-Inspector-tests)
+    - [CppMem](#CppMem)
+      - [CppMem principal usage](#CppMem-principal-usage)
+      - [Output explanation](#Output-explanation)
+      - [Tests](#Tests)
+    - [Other tools](#Other-tools)
+    - [Notes](#Notes)
+  - [Summary](#Summary)
+  - [References](#References)
+
 ## Problems in lock-free programming
 
 - Data race
@@ -31,8 +61,8 @@ I will discuss about these problems in the next sections.
 These tools have been tested on:
 
 - <a name="m1"></a>Machine 1(M1): ArchLinux `Linux 5.1.15-arch1-1-ARCH #1 SMP PREEMPT Tue Jun 25 04:49:39 UTC 2019 x86_64 GNU/Linux` (Intel i7-6700HQ (8 cores) 3.5GHz)
-  - gcc version 9.1.0 (GCC)
-  - clang version 8.0.0 (tags/RELEASE_800/final)
+  - gcc version 9.1.0-2 (GCC)
+  - clang version 8.0.0-4 (tags/RELEASE_800/final)
 
 **Note**: Outputs may differs depending on compilers and options:
 
@@ -64,7 +94,7 @@ The tools will be tested with small C++11 programs (multiple times for dynamic t
   - ABA':
     - [ABA' problem in a stack DS](./code/aba/aba.cpp)
     - [ABA' problem in a stack DS (threads launched at the same time)](./code/aba/aba_sync.cpp)
-    - [ABA' problem in a stack DS (tweaked to provoc it)](./code/aba/aba_detect.cpp)
+    - [ABA' problem in a stack DS (tweaked to provoc it) ¹](./code/aba/aba_detect.cpp)
   - Wrongly synchronized producer consumer:
     - [Notification load relaxed](./code/prod_cons/notif_wrong_acq_rel.cpp)
     - [Notification load relaxed CppMem](./code/prod_cons/notif_wrong_acq_rel.cppmem)
@@ -87,6 +117,15 @@ The tools will be tested with small C++11 programs (multiple times for dynamic t
     - [store/load relaxed](./code/memory_ordering/store_load_relaxed.cpp)
     - [store/load relaxed CppMem](./code/memory_ordering/store_load_relaxed.cppmem)
 
+*1: This program is just here to tries to provoc the ABA' problem.\
+It won't be tested with tools because the tools instruments malloc and other things that prevent the tweak to work.*
+
+Compilation, it will make 3 build (gcc, clang and clang with libc++):
+
+```bash
+./build_all.sh
+```
+
 ### Valgrind: [DRD](http://valgrind.org/docs/manual/drd-manual.html)
 
 |                    |                               |
@@ -95,7 +134,7 @@ The tools will be tested with small C++11 programs (multiple times for dynamic t
 | Type:              | dynamic on-the-fly            |
 | Plateform:         | Linux/MacOS/Android 32/64bits |
 
-#### Principal usage
+#### DRD principal usage
 
 DRD can detect data races, improper use of POSIX threads, false sharing,
 deadlock and monitor lock contention. But can't detect wrong lock order.\
@@ -105,12 +144,12 @@ It is faster than Helgring but can be less precise.
 
 By default DRD [does not check for local variable](#drd_stack_check) (stack).
 
-1. compile normally (with `-g` for debug info)
-2. run: `valgrind --tool=drd program`
+1. Compile normally (with `-g` for debug info)
+2. Run: `valgrind --tool=drd ./program`
 
 ***note**: you can colorize the output: `pip install colour-valgrind`*
 
-#### [Options](http://valgrind.org/docs/manual/drd-manual.html#drd-manual.options)
+#### [DRD options](http://valgrind.org/docs/manual/drd-manual.html#drd-manual.options)
 
 <a name="drd_stack_check"></a>
 `--check-stack-var=<yes|no> [default: no]`\
@@ -121,19 +160,25 @@ Segment merging is an algorithm to limit memory usage.
 Disabling segment merging may improve the accuracy displayed in race reports but can also trigger an out of memory error.
 
 `--suppressions=<suppressions-file>`\
-Specify user suppressions file, [example with atomics](./valgrind.supp).
+Specify user suppressions file, [example with atomics](./valgrind.supp). [doc](http://valgrind.org/docs/manual/manual-core.html#manual-core.suppress)
 
 `--gen-suppressions=all`\
 Generate suppression for detected problem. Useful to rapidly suppress problem.
 
-You can also [annotate your code](./code/prod_cons/notif_acq_rel.cpp)
-to help DRD understand happens-before relation on `std::atomic<>`.
+You can also annotate your code
+to help DRD understand happens-before relation [example](./code/prod_cons/notif_acq_rel.cpp) with `std::atomic<>`.
 Unfortunately this can silence errors if you get wrong with these, be sure to really understand you code before.
 It may be possible to wrap annotations and check for ordering(std::memory_order) in user defined `atomic` class.
 
-Check other [options](http://valgrind.org/docs/manual/drd-manual.html#drd-manual.options)
+=> Check other [options](http://valgrind.org/docs/manual/drd-manual.html#drd-manual.options)
 
-#### Tests
+#### DRD tests
+
+Launch:
+
+```bash
+valgrind --gen-suppressions=all --suppressions=valgrind.supp --tool=drd ./prog
+```
 
 | Sample                                                                                  | Result | Details |
 | --------------------------------------------------------------------------------------- | ------ | ------- |
@@ -163,25 +208,190 @@ Check other [options](http://valgrind.org/docs/manual/drd-manual.html#drd-manual
 - ?: The tool has not reported the error
 - !: The tool has crashed
 
+You can see [output samples](./outputs/drd.md).
+
 ### Valgrind: [Helgrind](http://valgrind.org/docs/manual/hg-manual.html)
+
+|                    |                               |
+| ------------------ | ----------------------------- |
+| [M1](#m1) Version: | valgrind-3.14.0               |
+| Type:              | dynamic on-the-fly            |
+| Plateform:         | Linux/MacOS/Android 32/64bits |
+
+#### Helgrind principal usage
+
+Helgrind can detect data races (concerned read/write position showed), improper use of POSIX threads,
+deadlock linked to lock ordering problems.
+
+It is more precise than DRD but slower.
 
 By default Helgrind [checks for local variable](#hg_stack_check) (stack).
 
-#### [Options](http://valgrind.org/docs/manual/hg-manual.html#hg-manual.options)
+1. Compile normally (with `-g` for debug info)
+2. Run: `valgrind --tool=helgrind ./program`
+
+***note**: you can colorize the output: `pip install colour-valgrind`*
+
+#### [Helgrind options](http://valgrind.org/docs/manual/hg-manual.html#hg-manual.options)
 
 <a name="hg_stack_check"></a>
 `--check-stack-refs=no|yes [default: yes]`\
 This flag enables you to skip checking for accesses to thread stacks (local variables). This can improve performance, but comes at the cost of missing races on stack-allocated data.
 
-Check other [options](http://valgrind.org/docs/manual/hg-manual.html#hg-manual.options)
+`--track-lockorders=no|yes [default: yes]`\
+Helgrind performs lock order consistency checking. If you're only interested in race errors, you may want to disable lock order checking.
+
+`--history-level=none|approx|full [default: full]`\
+
+- `full`: causes Helgrind collects enough information about "old" accesses that it can produce two stack traces in a race report: both the stack trace for the current access, and the trace for the older, conflicting access.\
+Collecting such information is expensive in both speed and memory. You may not need it in situations where you just want to check for the presence or absence of races, for example, when doing regression testing of a previously race-free program.
+
+- `none`: is the opposite. It causes Helgrind not to collect any information about previous accesses.
+
+- `approx`: provides a compromise between these two. It causes Helgrind to show a full trace for the later access, and approximate information regarding the earlier access. This approximate information consists of two stacks, and the earlier access is guaranteed to have occurred somewhere between program points denoted by the two stacks. This is not as useful as showing the exact stack for the previous access but it is almost as fast as `none`.
+
+You can also annotate your code, like DRD,
+to help Helgrind understand happens-before relation [example](./code/prod_cons/notif_acq_rel.cpp) with `std::atomic<>`.
+Unfortunately this can silence errors if you get wrong with these, be sure to really understand you code before.
+It may be possible to wrap annotations and check for ordering(std::memory_order) in user defined `atomic` class.
+
+=> Check other [options](http://valgrind.org/docs/manual/hg-manual.html#hg-manual.options)
+
+#### Helgrind tests
+
+Launch:
+
+```bash
+valgrind --gen-suppressions=all --suppressions=valgrind.supp --tool=helgrind ./prog
+```
+
+You can see [output samples](./outputs/helgrind.md).
 
 ### [ThreadSanitizer (tsan)](https://github.com/google/sanitizers/wiki/ThreadSanitizerCppManual)
 
+|                              |                                 |
+| ---------------------------- | ------------------------------- |
+| Type:                        | dynamic on-the-fly              |
+| [Plateform][tsan_plateform]: | Linux/MacOS/Android 64bits only |
+[tsan_plateform]: https://github.com/google/sanitizers/wiki/ThreadSanitizerCppManual#supported-platforms
+
+#### ThreadSanitizer principal usage
+
+ThreadSanitizer can detect data races (concerned read/write position showed), improper use of POSIX threads,
+deadlock linked to lock ordering problems. [see more](https://github.com/google/sanitizers/wiki/ThreadSanitizerDetectableBugs).\
+It also [support `std::atomic<>`](https://github.com/google/sanitizers/wiki/ThreadSanitizerAtomicOperations)
+
 ThreadSanitizer as for other sanitizers is integrated in Gcc and Clang
+
+1. Compile with `-fsanitize=thread` (and with `-g` for debug info)
+2. Run normally: `./program`
+3. you can pass options at runtime by [setting TSAN_OPTIONS variable](https://github.com/google/sanitizers/wiki/ThreadSanitizerFlags#runtime-flags)
+
+#### [ThreadSanitizer options](https://github.com/google/sanitizers/wiki/ThreadSanitizerFlags)
+
+There is [compile time options](https://github.com/google/sanitizers/wiki/ThreadSanitizerFlags#compiler-flags-llvm-specific).
+There is also options that can be [passed at runtime](https://github.com/google/sanitizers/wiki/ThreadSanitizerFlags#runtime-flags) avoiding recompilation.
+
+It is also possible to annotate code or [suppress warnings](https://github.com/google/sanitizers/wiki/ThreadSanitizerFlags#blacklist-format).
+
+#### ThreadSanitizer tests
+
+You can see [output samples](./outputs/tsan.md).
 
 ### Intel Inspector ([Free version](https://software.intel.com/en-us/inspector/choose-download#inspector))
 
+|                    |                               |
+| ------------------ | ----------------------------- |
+| [M1](#m1) Version: | 2019.3.199-3                  |
+| Type:              | dynamic on-the-fly            |
+| Plateform:         | Linux/MacOS/Windows 32/64bits |
+
+#### Intel Inspector principal usage
+
+
+
+1. Compile normally (and with `-g` for debug info)
+2. Run intel inspector
+
+#### [Intel Inspector options](https://software.intel.com/en-us/inspector/documentation/featured-documentation)
+
+#### Intel Inspector tests
+
+You can see [output samples](./outputs/intel_inspector.md).
+
 ### [CppMem](http://svr-pes20-cppmem.cl.cam.ac.uk/cppmem/)
+
+|            |            |
+| ---------- | ---------- |
+| Type:      | static     |
+| Plateform: | On the web |
+
+#### CppMem principal usage
+
+CppMem has been designed to explore the C/C++ memory model. It support a tiny subset of pseudo C/C++ (no struct/classes)
+
+1. Go to http://svr-pes20-cppmem.cl.cam.ac.uk/cppmem/
+2. Write/enter your "program"
+3. Run\
+![how to run cppmem](images/cppmem/main/cppmem_run.png)
+4. See different consistent executions\
+![how to explore results cppmem](images/cppmem/main/cppmem_results.png)
+
+You can use `std::thread` or you could use this syntax:
+
+```cppmem
+{{{
+  {
+    // thread1
+  }
+|||
+  {
+    // thread2
+  }
+}}}
+```
+
+#### Output explanation
+
+![how to explore results cppmem](images/cppmem/main/cppmem_graph.png)
+
+You could rapidly see on top informations (races, locks, ...).\
+Then the graph describing one possible execution.
+
+- W: write
+- R: read
+- (R/W)na: non atomic R/W
+- (R/W)(sc|rlx): atomic R/W (seq_cst|relaxed)
+- Racq: atomic read acquire
+- Wrel: atomic write release
+- sb: sequenced before
+- mo: modification order
+- sw: synchronized-with
+- hb: happens-before
+- rf: read from
+- dr: data race
+- sc: sequentially consistant
+
+More details on their [help page](http://svr-pes20-cppmem.cl.cam.ac.uk/cppmem/help.html).
+
+#### Tests
+
+We have to convert the C++ into CppMem syntax, some test aren't there because CppMem does not support features used in it.
+
+| Sample                                                                                        | Result | Details |
+| --------------------------------------------------------------------------------------------- | ------ | ------- |
+| [Simple data race CppMem](./code/data_race/data_race_simple.cppmem)                           |        |         |
+| [Data race on notify CppMem](./code/data_race/pseudo_notif.cppmem)                            |        |         |
+| [Notification load relaxed CppMem](./code/prod_cons/notif_wrong_acq_rel.cppmem)               |        |         |
+| [Notification load relaxed in loop CppMem](./code/prod_cons/notif_wrong_acq_rel_2.cppmem)     |        |         |
+| [Notification load/store relaxed CppMem](./code/prod_cons/notif_relaxed.cppmem)               |        |         |
+| [Notification sequentially consistant CppMem](./code/prod_cons/notif_seq_cst.cppmem)          |        |         |
+| [Notification acquire release CppMem](./code/prod_cons/notif_acq_rel.cppmem)                  |        |         |
+| [store/load sequentially consistant CppMem](./code/memory_ordering/store_load_seq_cst.cppmem) |        |         |
+| [store/load acquire release CppMem](./code/memory_ordering/store_load_acq_rel_sem.cppmem)     |        |         |
+| [store/load relaxed CppMem](./code/memory_ordering/store_load_relaxed.cppmem)                 |        |         |
+
+You can see [output samples](./outputs/cppmem.md).
 
 ### Other tools
 
@@ -207,6 +417,7 @@ CppMem can shows us what is going on in lock free but has serious limitations (m
 ThreadSanitizer can work well in lock-free context but has [not been seriously tested on that specific area[7]](#tsan_faq "TSan supports [...] C++ `<atomic>` operations are supported with llvm libc++ (not very throughly tested, though).") and there are no new paper describing the new Thread Sanitizer (v2). It will be necessary to dig and test real lock free programs with TSan.
 
 // TODO: don't had time to test with more than 2 threads: eg: multi conso/prod, ...
+// TODO: don't had time to test on other machines (ARM, verimag)
 
 ## References
 
