@@ -4,13 +4,17 @@ project(lock_free_problems VERSION 0.1.0)
 find_package(Boost REQUIRED
              COMPONENTS atomic thread)
 
-set(USE_LIBCXX OFF)
+set(USE_LIBCXX OFF CACHE BOOL "using libc++")
+set(OPTIMIZATION_LEVEL 0)
 
 message("USE_LIBCXX: " ${USE_LIBCXX})
+message("OPTIMIZATION_LEVEL: "
+        ${OPTIMIZATION_LEVEL})
 
 add_compile_options(-pedantic
                     -Wall
                     -Wextra
+                    -Wconversion
                     -Wold-style-cast
                     -Werror=return-type)
 
@@ -27,7 +31,8 @@ function(add_exe tname)
   target_compile_options(
     ${tname}
     PRIVATE
-      -g $<$<BOOL:${USE_LIBCXX}>:-stdlib=libc++>)
+      -O${OPTIMIZATION_LEVEL} -g
+      $<$<BOOL:${USE_LIBCXX}>:-stdlib=libc++>)
   target_link_options(
     ${tname} PRIVATE
     $<$<BOOL:${USE_LIBCXX}>:-stdlib=libc++>)
