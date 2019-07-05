@@ -1,0 +1,14 @@
+Script started on 2019-07-05 17:38:53+02:00 [TERM="xterm-256color" TTY="/dev/pts/4" COLUMNS="189" LINES="21"]
+build	      build_clang	  build_gcc	CMakeLists.txt	images		 outputs	    README.md	test.cpp    valgrind.supp
+build_all.sh  build_clang_libcxx  build_gcc_O2	code		lauch_inspxe.sh  path_colorizer.sh  README.pdf	typescript
+  PID TTY          TIME CMD
+ 5733 pts/5    00:00:00 ps
+
+Script done on 2019-07-05 17:38:53+02:00 [COMMAND_EXIT_CODE="0"]
+Script started on 2019-07-05 17:39:19+02:00 [TERM="xterm-256color" TTY="/dev/pts/4" COLUMNS="189" LINES="21"]
+build	      build_clang	  build_gcc	CMakeLists.txt	images		 outputs	    README.md	test.cpp    valgrind.supp
+build_all.sh  build_clang_libcxx  build_gcc_O2	code		lauch_inspxe.sh  path_colorizer.sh  README.pdf	typescript
+  PID TTY          TIME CMD
+ 6000 pts/5    00:00:00 ps
+
+Script done on 2019-07-05 17:39:19+02:00 [COMMAND_EXIT_CODE="0"]

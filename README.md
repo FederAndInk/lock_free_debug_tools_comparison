@@ -475,9 +475,9 @@ PATH_COLORIZER_SEARCH=$HOME ./path_colorizer.sh ./program
 | [Notification sequentially consistent](./code/prod_cons/notif_seq_cst.cpp)          |   ✔   |   ✔   |      ✔       | [more](./outputs/tsan.md#Notification-fix)              |
 | [Notification acquire release](./code/prod_cons/notif_acq_rel.cpp)                  |   ✔   |   ✔   |      ✔       | [more](./outputs/tsan.md#Notification-fix)              |
 | [ABA' fixed](./code/aba/aba_fixed.cpp)                                              |   ✔   |   ✔   |      ✔       | [more](./outputs/tsan.md#ABA-fix)                       |
-| [store/load sequentially consistent](./code/memory_ordering/store_load_seq_cst.cpp) |   .   |   .   |      .       | Tsan does nothing on that, not the purpose of it though |
-| [store/load acquire release](./code/memory_ordering/store_load_acq_rel_sem.cpp)     |   .   |   .   |      .       | Tsan does nothing on that, not the purpose of it though |
-| [store/load relaxed](./code/memory_ordering/store_load_relaxed.cpp)                 |   .   |   .   |      .       | Tsan does nothing on that, not the purpose of it though |
+| [store/load sequentially consistent](./code/memory_ordering/store_load_seq_cst.cpp) |   ✔   |   ✔   |      ✔       | Tsan does nothing on that, not the purpose of it though |
+| [store/load acquire release](./code/memory_ordering/store_load_acq_rel_sem.cpp)     |   ✔   |   ✔   |      ✔       | Tsan does nothing on that, not the purpose of it though |
+| [store/load relaxed](./code/memory_ordering/store_load_relaxed.cpp)                 |   ✔   |   ✔   |      ✔       | Tsan does nothing on that, not the purpose of it though |
 
 - ✔: The tool has correctly detected the error or correctly reported no error
 - ?: The tool has reported an error even though there was no error
@@ -489,11 +489,11 @@ You can see [output samples](./outputs/tsan.md).
 
 ### Intel Inspector ([Free version](https://software.intel.com/en-us/inspector/choose-download#inspector))
 
-|                    |                               |
-| ------------------ | ----------------------------- |
-| [M1](#m1) Version: | 2019.3.199-3                  |
-| Type:              | dynamic on-the-fly            |
-| Plateform:         | Linux/MacOS/Windows 32/64bits |
+|                    |                                                          |
+| ------------------ | -------------------------------------------------------- |
+| [M1](#m1) Version: | 2019.3.199-3                                             |
+| Type:              | dynamic on-the-fly instrumentation, post-mortem analysis |
+| Plateform:         | Linux/MacOS/Windows 32/64bits                            |
 
 #### Intel Inspector principal usage
 
@@ -520,6 +520,45 @@ When creating a new analysis you can specify options by clicking on Edit button:
 It is pretty straightforward, by default data race on stack is disabled, you may want to enable it.
 
 #### Intel Inspector tests
+
+using the cli, I written a [script](./lauch_inspxe.sh).
+
+```bash
+inspxe-cl -collect=ti-3 -- ./prog; inspxe-cl -report=problem
+# or
+./lauch_inspxe.sh
+```
+
+| Sample with errors                                                                 |  Gcc  | Clang | Clang libc++ | Details                                                              |
+| ---------------------------------------------------------------------------------- | :---: | :---: | :----------: | -------------------------------------------------------------------- |
+| [Simple data race](./code/data_race/data_race_simple.cpp)                          |   ✔   |   ✔   |      ✔       | [more](./outputs/inspector.md#Simple-data-race)                      |
+| [Data race on std::string](./code/data_race/data_race_string.cpp)                  |   ✔   |   ✔   |      ✔       | [more](./outputs/inspector.md#String-data-race)                      |
+| [Data race notify](./code/data_race/pseudo_notif.cpp)                              |   ✔   |   ✔   |      ✔       | [more](./outputs/inspector.md#Pseudo-notification)                   |
+| [Data race on std::map](./code/data_race/race_map.cpp)                             |   ✔   |   ✔   |      ✔       | [more](./outputs/inspector.md#stdmap-data-race)                      |
+| [Data race and race condition](./code/data_race/data_race_race_cond.cpp)           |   ✔   |   ✔   |      ✔       | [more](./outputs/inspector.md#Data-race-vs-race-condition)           |
+| [Data race on object destruction](./code/data_race/race_destruction.cpp)           |   ✘   |   ✘   |      ✘       | [more](./outputs/inspector.md#Data-race-on-object-destruction)       |
+| [Data race on small string destruction](./code/data_race/race_destruction_SSO.cpp) |   ✘   |   ✘   |      ✘       | [more](./outputs/inspector.md#Data-race-on-small-string-destruction) |
+| [Data race on string destruction](./code/data_race/race_destruction_string.cpp)    |   ✘   |   ✘   |      ✘       | [more](./outputs/inspector.md#Data-race-on-string-destruction)       |
+| [ABA' problem in a stack DS](./code/aba/aba.cpp)                                   |   ✘   |   ✘   |      ✘       | [more](./outputs/inspector.md#ABA)                                   |
+| [ABA' problem in a stack DS Sync](./code/aba/aba_sync.cpp)                         |   ✘   | ✔1000 |    ✔1000     | [more](./outputs/inspector.md#ABA-synchronized)                      |
+| [Notification load relaxed](./code/prod_cons/notif_wrong_acq_rel.cpp)              |   ~   |   ~   |      ~       | [more](./outputs/inspector.md#Notification-load-relaxed)             |
+| [Notification load relaxed in loop](./code/prod_cons/notif_wrong_acq_rel_2.cpp)    |   ~   |   ~   |      ~       | [more](./outputs/inspector.md#Notification-load-relaxed-in-loop)     |
+| [Notification load/store relaxed](./code/prod_cons/notif_relaxed.cpp)              |   ~   |   ~   |      ~       | [more](./outputs/inspector.md#Notification-loadstore-relaxed)        |
+
+| Correct sample                                                                 |  Gcc  | Clang | Clang libc++ | Details                                                     |
+| ------------------------------------------------------------------------------ | :---: | :---: | :----------: | ----------------------------------------------------------- |
+| [Simple data race fix](./code/atomic/atomic_fix_data_race_simple.cpp)          |   ~   |   ✔   |      ✔       | [more](./outputs/inspector.md#Data-race-atomic-fix)         |
+| [Simple data race fix relaxed](./code/atomic/atomic_fix_data_race_relaxed.cpp) |   ~   |   ~   |      ~       | [more](./outputs/inspector.md#Data-race-atomic-fix-relaxed) |
+| [Notification sequentially consistent](./code/prod_cons/notif_seq_cst.cpp)     |   ~   |   ~   |      ~       | [more](./outputs/inspector.md#Notification-fix)             |
+| [Notification acquire release](./code/prod_cons/notif_acq_rel.cpp)             |   ~   |   ~   |      ~       | [more](./outputs/inspector.md#Notification-fix)             |
+| [ABA' fixed](./code/aba/aba_fixed.cpp)                                         |   ✔   |   ✔   |      ✔       | [more](./outputs/inspector.md#ABA-fix)                      |
+
+- ✔: The tool has correctly detected the error or correctly reported no error
+- ?: The tool has reported an error even though there was no error
+- ✘: The tool has not reported the error
+- ~: Out of scope
+- !: The tool has crashed
+- \<n> if a number is specified it means that the error is manifesting when looping n times.
 
 You can see [output samples](./outputs/inspector.md).
 
@@ -618,12 +657,14 @@ think about using [static local variable](https://en.cppreference.com/w/cpp/lang
 
 ## Summary
 
-(SEE: if Intel inspector support lockfree)
-
 Most tools have poor support of lock-free programming.\
 CppMem can shows us what is going on in lock free but has serious limitations (no struct, tiny subset of pseudo C supported).
 
 ThreadSanitizer can work well in lock-free context but has [not been seriously tested on that specific area[7]](https://github.com/google/sanitizers/wiki/ThreadSanitizerCppManual#faq) and there are no paper describing the new Thread Sanitizer (v2).
+
+Even though we hadn't benchmark the time, during the tests Tsan appears to be the fastest.\
+Intel Inspector seems to be really slow, actually the analysis take a long time.\
+DRD even faster than Helgrind seems both to be significantly slower than Tsan.
 
 We had ideas for further testing, but due to lack of time we don't have tested:
 
@@ -645,7 +686,7 @@ Finally it would be interesting to:
 In order to potentially complete TSan specifically for lock-free programs.
 2. See to make an optimizer that would transform seq_cst into more relaxed barrier.\
 That will simplify coder task to produce less error prone program, without losing performance due to relative cost of full memory barriers.
-1. Explore how we could detect the ABA' problem as no tools could simply detect it.
+3. Explore how we could detect the ABA' problem as no tools could simply detect it.
 
 ## References
 
