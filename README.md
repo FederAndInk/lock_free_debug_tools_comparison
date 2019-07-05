@@ -419,15 +419,27 @@ You can see [output samples](./outputs/tsan.md).
 
 #### Intel Inspector principal usage
 
-Intel Inspector can detect data race, deadlock, it partially support atomics (MSVC/Intel icc/Clang).
+Intel Inspector can detect data race, deadlock, it partially support atomics (MSVC/Intel(icc)/Clang).\
+Here is a [more detailed list](https://software.intel.com/en-us/inspector-user-guide-linux-problem-type-reference).
 
-But it has some [limitations](https://software.intel.com/en-us/intel-inspector-2018-release-notes-issues-and-limitations),
-especially C++11 Atomics on Clang/Gcc.
+But it has some [limitations](https://software.intel.com/en-us/intel-inspector-2019-release-notes-issues-and-limitations),
+especially C++11 Atomics on Clang/Gcc aren't supported.
 
 1. Compile normally (and with `-g` for debug info)
 2. Run intel inspector or inspxe-cl command line
+3. Create/open a project
+4. Tell it where your binary is\
+![project](images/intel_inspector/create_project.png)
+5. Launch analyses\
+![project](images/intel_inspector/analysis.png)
 
 #### [Intel Inspector options](https://software.intel.com/en-us/inspector/documentation/featured-documentation)
+
+When creating a new analysis you can specify options by clicking on Edit button:
+
+![options](images/intel_inspector/options.png)
+
+It is pretty straightforward, by default data race on stack is disabled, you may want to enable it.
 
 #### Intel Inspector tests
 
