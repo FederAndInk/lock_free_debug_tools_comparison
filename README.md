@@ -286,6 +286,8 @@ Launch:
 valgrind --gen-suppressions=all --suppressions=valgrind.supp --check-stack-var=yes --tool=drd ./prog
 ```
 
+The [suppressions file](./valgrind.supp) if you want.
+
 | Sample with errors                                                                 |  Gcc  | Clang | Clang libc++ | Details                                                        |
 | ---------------------------------------------------------------------------------- | :---: | :---: | :----------: | -------------------------------------------------------------- |
 | [Simple data race](./code/data_race/data_race_simple.cpp)                          |   ✔   |   ✔   |      ✔       | [more](./outputs/drd.md#Simple-data-race)                      |
@@ -306,8 +308,8 @@ valgrind --gen-suppressions=all --suppressions=valgrind.supp --check-stack-var=y
 | ----------------------------------------------------------------------------------- | :---: | :---: | :----------: | ----------------------------------------------------- |
 | [Simple data race fix](./code/atomic/atomic_fix_data_race_simple.cpp)               |  ✔?   |   ✔   |      ✔       | [more](./outputs/drd.md#Data-race-atomic-fix)         |
 | [Simple data race fix relaxed](./code/atomic/atomic_fix_data_race_relaxed.cpp)      |  ✔?   |  ✔?   |      ✔?      | [more](./outputs/drd.md#Data-race-atomic-fix-relaxed) |
-| [Notification sequentially consistant](./code/prod_cons/notif_seq_cst.cpp)          |  ✔✘   |  ✔✘   |      ✔✘      | [more](./outputs/drd.md#Notification-fix)             |
-| [Notification acquire release](./code/prod_cons/notif_acq_rel.cpp)                  |  ✔✘   |  ✔✘   |      ✔✘      | [more](./outputs/drd.md#Notification-fix)             |
+| [Notification sequentially consistant](./code/prod_cons/notif_seq_cst.cpp)          |  ✔?   |  ✔?   |      ✔?      | [more](./outputs/drd.md#Notification-fix)             |
+| [Notification acquire release](./code/prod_cons/notif_acq_rel.cpp)                  |  ✔?   |  ✔?   |      ✔?      | [more](./outputs/drd.md#Notification-fix)             |
 | [ABA' fixed](./code/aba/aba_fixed.cpp)                                              |   ✔   |   ✔   |      ✔       | [more](./outputs/drd.md#ABA-fix)                      |
 | [store/load sequentially consistant](./code/memory_ordering/store_load_seq_cst.cpp) |   .   |   .   |      .       | DRD does nothing on that, not the purpose of it       |
 | [store/load acquire release](./code/memory_ordering/store_load_acq_rel_sem.cpp)     |   .   |   .   |      .       | DRD does nothing on that, not the purpose of it       |
@@ -376,6 +378,41 @@ Launch:
 valgrind --gen-suppressions=all --suppressions=valgrind.supp --tool=helgrind ./prog
 ```
 
+The [suppressions file](./valgrind.supp) if you want.
+
+| Sample with errors                                                                 |  Gcc  | Clang | Clang libc++ | Details                                                             |
+| ---------------------------------------------------------------------------------- | :---: | :---: | :----------: | ------------------------------------------------------------------- |
+| [Simple data race](./code/data_race/data_race_simple.cpp)                          |   ✔   |   ✔   |      ✔       | [more](./outputs/helgrind.md#Simple-data-race)                      |
+| [Data race on std::string](./code/data_race/data_race_string.cpp)                  |   ✔   |   ✔   |      ✔       | [more](./outputs/helgrind.md#String-data-race)                      |
+| [Data race notify](./code/data_race/pseudo_notif.cpp)                              |   ✔   |   ✔   |      ✔       | [more](./outputs/helgrind.md#Pseudo-notification)                   |
+| [Data race on std::map](./code/data_race/race_map.cpp)                             |   ✔   |   ✔   |      ✔       | [more](./outputs/helgrind.md#stdmap-data-race)                      |
+| [Data race and race condition](./code/data_race/data_race_race_cond.cpp)           |   ✔   |   ✔   |      ✔       | [more](./outputs/helgrind.md#Data-race-vs-race-condition)           |
+| [Data race on object destruction](./code/data_race/race_destruction.cpp)           |   ✘   |   ✘   |      ✘       | [more](./outputs/helgrind.md#Data-race-on-object-destruction)       |
+| [Data race on small string destruction](./code/data_race/race_destruction_SSO.cpp) |   ✘   |   ✘   |      ✘       | [more](./outputs/helgrind.md#Data-race-on-small-string-destruction) |
+| [Data race on string destruction](./code/data_race/race_destruction_string.cpp)    |   ✘   |   ✘   |      ✘       | [more](./outputs/helgrind.md#Data-race-on-string-destruction)       |
+| [ABA' problem in a stack DS](./code/aba/aba.cpp)                                   |   ✘   |   ✘   |      ✘       | [more](./outputs/helgrind.md#ABA)                                   |
+| [ABA' problem in a stack DS Sync](./code/aba/aba_sync.cpp)                         |   ✘   |   ✘   |     ✔10      | [more](./outputs/helgrind.md#ABA-synchronized)                      |
+| [Notification load relaxed](./code/prod_cons/notif_wrong_acq_rel.cpp)              |  ✔✘   |  ✔✘   |      ✔✘      | [more](./outputs/helgrind.md#Notification-load-relaxed)             |
+| [Notification load relaxed in loop](./code/prod_cons/notif_wrong_acq_rel_2.cpp)    |  ✔✘   |  ✔✘   |      ✔✘      | [more](./outputs/helgrind.md#Notification-load-relaxed-in-loop)     |
+| [Notification load/store relaxed](./code/prod_cons/notif_relaxed.cpp)              |  ✔✘   |  ✔✘   |      ✔✘      | [more](./outputs/helgrind.md#Notification-loadstore-relaxed)        |
+
+| Correct sample                                                                      |  Gcc  | Clang | Clang libc++ | Details                                                    |
+| ----------------------------------------------------------------------------------- | :---: | :---: | :----------: | ---------------------------------------------------------- |
+| [Simple data race fix](./code/atomic/atomic_fix_data_race_simple.cpp)               |  ✔?   |   ✔   |      ✔       | [more](./outputs/helgrind.md#Data-race-atomic-fix)         |
+| [Simple data race fix relaxed](./code/atomic/atomic_fix_data_race_relaxed.cpp)      |  ✔?   |  ✔?   |      ✔?      | [more](./outputs/helgrind.md#Data-race-atomic-fix-relaxed) |
+| [Notification sequentially consistant](./code/prod_cons/notif_seq_cst.cpp)          |  ✔?   |  ✔?   |      ✔?      | [more](./outputs/helgrind.md#Notification-fix)             |
+| [Notification acquire release](./code/prod_cons/notif_acq_rel.cpp)                  |  ✔?   |  ✔?   |      ✔?      | [more](./outputs/helgrind.md#Notification-fix)             |
+| [ABA' fixed](./code/aba/aba_fixed.cpp)                                              |   ✔   |   ✔   |      ✔       | [more](./outputs/helgrind.md#ABA-fix)                      |
+| [store/load sequentially consistant](./code/memory_ordering/store_load_seq_cst.cpp) |   .   |   .   |      .       | Helgrind does nothing on that, not the purpose of it       |
+| [store/load acquire release](./code/memory_ordering/store_load_acq_rel_sem.cpp)     |   .   |   .   |      .       | Helgrind does nothing on that, not the purpose of it       |
+| [store/load relaxed](./code/memory_ordering/store_load_relaxed.cpp)                 |   .   |   .   |      .       | Helgrind does nothing on that, not the purpose of it       |
+
+- ✔: The tool has correctly detected the error or correctly reported no error
+- ?: The tool has reported an error when there was no error
+- ✘: The tool has not reported the error
+- !: The tool has crashed
+- \<n> if a number is specified it means that the error is manifesting when looping n times.
+
 You can see [output samples](./outputs/helgrind.md).
 
 ### [ThreadSanitizer (tsan)](https://github.com/google/sanitizers/wiki/ThreadSanitizerCppManual)
@@ -443,7 +480,7 @@ It is pretty straightforward, by default data race on stack is disabled, you may
 
 #### Intel Inspector tests
 
-You can see [output samples](./outputs/intel_inspector.md).
+You can see [output samples](./outputs/inspector.md).
 
 ### [CppMem](http://svr-pes20-cppmem.cl.cam.ac.uk/cppmem/)
 
