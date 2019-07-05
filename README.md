@@ -280,7 +280,7 @@ It may be possible to wrap annotations and check for ordering(std::memory_order)
 
 #### DRD tests
 
-Launch:
+Run command:
 
 ```bash
 valgrind --gen-suppressions=all --suppressions=valgrind.supp --check-stack-var=yes --tool=drd ./prog
@@ -372,7 +372,7 @@ It may be possible to wrap annotations and check for ordering(std::memory_order)
 
 #### Helgrind tests
 
-Launch:
+Run command:
 
 ```bash
 valgrind --gen-suppressions=all --suppressions=valgrind.supp --tool=helgrind ./prog
@@ -396,16 +396,16 @@ The [suppressions file](./valgrind.supp) if you want.
 | [Notification load relaxed in loop](./code/prod_cons/notif_wrong_acq_rel_2.cpp)    |  ✔✘   |  ✔✘   |      ✔✘      | [more](./outputs/helgrind.md#Notification-load-relaxed-in-loop)     |
 | [Notification load/store relaxed](./code/prod_cons/notif_relaxed.cpp)              |  ✔✘   |  ✔✘   |      ✔✘      | [more](./outputs/helgrind.md#Notification-loadstore-relaxed)        |
 
-| Correct sample                                                                      |  Gcc  | Clang | Clang libc++ | Details                                                    |
-| ----------------------------------------------------------------------------------- | :---: | :---: | :----------: | ---------------------------------------------------------- |
-| [Simple data race fix](./code/atomic/atomic_fix_data_race_simple.cpp)               |  ✔?   |   ✔   |      ✔       | [more](./outputs/helgrind.md#Data-race-atomic-fix)         |
-| [Simple data race fix relaxed](./code/atomic/atomic_fix_data_race_relaxed.cpp)      |  ✔?   |  ✔?   |      ✔?      | [more](./outputs/helgrind.md#Data-race-atomic-fix-relaxed) |
-| [Notification sequentially consistant](./code/prod_cons/notif_seq_cst.cpp)          |  ✔?   |  ✔?   |      ✔?      | [more](./outputs/helgrind.md#Notification-fix)             |
-| [Notification acquire release](./code/prod_cons/notif_acq_rel.cpp)                  |  ✔?   |  ✔?   |      ✔?      | [more](./outputs/helgrind.md#Notification-fix)             |
-| [ABA' fixed](./code/aba/aba_fixed.cpp)                                              |   ✔   |   ✔   |      ✔       | [more](./outputs/helgrind.md#ABA-fix)                      |
-| [store/load sequentially consistant](./code/memory_ordering/store_load_seq_cst.cpp) |   .   |   .   |      .       | Helgrind does nothing on that, not the purpose of it       |
-| [store/load acquire release](./code/memory_ordering/store_load_acq_rel_sem.cpp)     |   .   |   .   |      .       | Helgrind does nothing on that, not the purpose of it       |
-| [store/load relaxed](./code/memory_ordering/store_load_relaxed.cpp)                 |   .   |   .   |      .       | Helgrind does nothing on that, not the purpose of it       |
+| Correct sample                                                                      |  Gcc  | Clang | Clang libc++ | Details                                                     |
+| ----------------------------------------------------------------------------------- | :---: | :---: | :----------: | ----------------------------------------------------------- |
+| [Simple data race fix](./code/atomic/atomic_fix_data_race_simple.cpp)               |  ✔?   |   ✔   |      ✔       | [more](./outputs/helgrind.md#Data-race-atomic-fix)          |
+| [Simple data race fix relaxed](./code/atomic/atomic_fix_data_race_relaxed.cpp)      |  ✔?   |  ✔?   |      ✔?      | [more](./outputs/helgrind.md#Data-race-atomic-fix-relaxed)  |
+| [Notification sequentially consistant](./code/prod_cons/notif_seq_cst.cpp)          |  ✔?   |  ✔?   |      ✔?      | [more](./outputs/helgrind.md#Notification-fix)              |
+| [Notification acquire release](./code/prod_cons/notif_acq_rel.cpp)                  |  ✔?   |  ✔?   |      ✔?      | [more](./outputs/helgrind.md#Notification-fix)              |
+| [ABA' fixed](./code/aba/aba_fixed.cpp)                                              |   ✔   |   ✔   |      ✔       | [more](./outputs/helgrind.md#ABA-fix)                       |
+| [store/load sequentially consistant](./code/memory_ordering/store_load_seq_cst.cpp) |   .   |   .   |      .       | Helgrind does nothing on that, not the purpose of it though |
+| [store/load acquire release](./code/memory_ordering/store_load_acq_rel_sem.cpp)     |   .   |   .   |      .       | Helgrind does nothing on that, not the purpose of it though |
+| [store/load relaxed](./code/memory_ordering/store_load_relaxed.cpp)                 |   .   |   .   |      .       | Helgrind does nothing on that, not the purpose of it though |
 
 - ✔: The tool has correctly detected the error or correctly reported no error
 - ?: The tool has reported an error when there was no error
@@ -436,13 +436,52 @@ ThreadSanitizer as for other sanitizers is integrated in Gcc and Clang
 
 #### [ThreadSanitizer options](https://github.com/google/sanitizers/wiki/ThreadSanitizerFlags)
 
-There is [compile time options](https://github.com/google/sanitizers/wiki/ThreadSanitizerFlags#compiler-flags-llvm-specific).\
-There is also options that can be [passed at runtime](https://github.com/google/sanitizers/wiki/ThreadSanitizerFlags#runtime-flags) avoiding recompilation.\
+There is [compile time options](https://github.com/google/sanitizers/wiki/ThreadSanitizerFlags#compiler-flags-llvm-specific) 
+and options that can be [passed at runtime](https://github.com/google/sanitizers/wiki/ThreadSanitizerFlags#runtime-flags) avoiding recompilation.\
 And also [common flags](https://github.com/google/sanitizers/wiki/SanitizerCommonFlags) with other sanitizer.
 
-It is also possible to annotate code or [suppress warnings](https://github.com/google/sanitizers/wiki/ThreadSanitizerFlags#blacklist-format).
+It is possible to annotate code or [suppress warnings](https://github.com/google/sanitizers/wiki/ThreadSanitizerFlags#blacklist-format).
 
 #### ThreadSanitizer tests
+
+Run command:
+
+```bash
+PATH_COLORIZER_SEARCH=$HOME ./path_colorizer.sh ./program
+```
+
+| Sample with errors                                                                 |  Gcc  | Clang | Clang libc++ | Details                                                         |
+| ---------------------------------------------------------------------------------- | :---: | :---: | :----------: | --------------------------------------------------------------- |
+| [Simple data race](./code/data_race/data_race_simple.cpp)                          |   ✔   |   ✔   |      ✔       | [more](./outputs/tsan.md#Simple-data-race)                      |
+| [Data race on std::string](./code/data_race/data_race_string.cpp)                  |   ✔   |   ✔   |      ✔       | [more](./outputs/tsan.md#String-data-race)                      |
+| [Data race notify](./code/data_race/pseudo_notif.cpp)                              |   ✔   |   ✔   |      ✔       | [more](./outputs/tsan.md#Pseudo-notification)                   |
+| [Data race on std::map](./code/data_race/race_map.cpp)                             |   ✔   |   ✔   |      ✔       | [more](./outputs/tsan.md#stdmap-data-race)                      |
+| [Data race and race condition](./code/data_race/data_race_race_cond.cpp)           |   ✔   |   ✔   |      ✔       | [more](./outputs/tsan.md#Data-race-vs-race-condition)           |
+| [Data race on object destruction](./code/data_race/race_destruction.cpp)           |   ✘   |   ✘   |      ✘       | [more](./outputs/tsan.md#Data-race-on-object-destruction)       |
+| [Data race on small string destruction](./code/data_race/race_destruction_SSO.cpp) |   ✘   |   ✘   |      ✘       | [more](./outputs/tsan.md#Data-race-on-small-string-destruction) |
+| [Data race on string destruction](./code/data_race/race_destruction_string.cpp)    |   ✔   |   ✘   |      ✔       | [more](./outputs/tsan.md#Data-race-on-string-destruction)       |
+| [ABA' problem in a stack DS](./code/aba/aba.cpp)                                   |   ✘   |   ✘   |      ✘       | [more](./outputs/tsan.md#ABA)                                   |
+| [ABA' problem in a stack DS Sync](./code/aba/aba_sync.cpp)                         |  ✔10  |  ✔10  |    ✔1000     | [more](./outputs/tsan.md#ABA-synchronized)                      |
+| [Notification load relaxed](./code/prod_cons/notif_wrong_acq_rel.cpp)              |   ✔   |   ✔   |      ✔       | [more](./outputs/tsan.md#Notification-load-relaxed)             |
+| [Notification load relaxed in loop](./code/prod_cons/notif_wrong_acq_rel_2.cpp)    |   ✔   |   ✔   |      ✔       | [more](./outputs/tsan.md#Notification-load-relaxed-in-loop)     |
+| [Notification load/store relaxed](./code/prod_cons/notif_relaxed.cpp)              |   ✔   |   ✔   |      ✔       | [more](./outputs/tsan.md#Notification-loadstore-relaxed)        |
+
+| Correct sample                                                                      |  Gcc  | Clang | Clang libc++ | Details                                                 |
+| ----------------------------------------------------------------------------------- | :---: | :---: | :----------: | ------------------------------------------------------- |
+| [Simple data race fix](./code/atomic/atomic_fix_data_race_simple.cpp)               |   ✔   |   ✔   |      ✔       | [more](./outputs/tsan.md#Data-race-atomic-fix)          |
+| [Simple data race fix relaxed](./code/atomic/atomic_fix_data_race_relaxed.cpp)      |   ✔   |   ✔   |      ✔       | [more](./outputs/tsan.md#Data-race-atomic-fix-relaxed)  |
+| [Notification sequentially consistant](./code/prod_cons/notif_seq_cst.cpp)          |   ✔   |   ✔   |      ✔       | [more](./outputs/tsan.md#Notification-fix)              |
+| [Notification acquire release](./code/prod_cons/notif_acq_rel.cpp)                  |   ✔   |   ✔   |      ✔       | [more](./outputs/tsan.md#Notification-fix)              |
+| [ABA' fixed](./code/aba/aba_fixed.cpp)                                              |   ✔   |   ✔   |      ✔       | [more](./outputs/tsan.md#ABA-fix)                       |
+| [store/load sequentially consistant](./code/memory_ordering/store_load_seq_cst.cpp) |   .   |   .   |      .       | Tsan does nothing on that, not the purpose of it though |
+| [store/load acquire release](./code/memory_ordering/store_load_acq_rel_sem.cpp)     |   .   |   .   |      .       | Tsan does nothing on that, not the purpose of it though |
+| [store/load relaxed](./code/memory_ordering/store_load_relaxed.cpp)                 |   .   |   .   |      .       | Tsan does nothing on that, not the purpose of it though |
+
+- ✔: The tool has correctly detected the error or correctly reported no error
+- ?: The tool has reported an error when there was no error
+- ✘: The tool has not reported the error
+- !: The tool has crashed
+- \<n> if a number is specified it means that the error is manifesting when looping n times.
 
 You can see [output samples](./outputs/tsan.md).
 

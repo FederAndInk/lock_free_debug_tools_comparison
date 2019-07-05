@@ -38,7 +38,9 @@ function(add_exe tname)
   target_compile_options(
     ${tname}
     PRIVATE
-      -O${OPTIMIZATION_LEVEL} -g
+      -O${OPTIMIZATION_LEVEL}
+      -g
+      -gcolumn-info
       $<$<BOOL:${USE_LIBCXX}>:-stdlib=libc++>)
   target_link_options(
     ${tname} PRIVATE
