@@ -102,7 +102,6 @@ Tsan reports no errors, good.
 ## Notification fix
 
 Tsan reports no errors, good.
-
 ## ABA fix
 
 Tsan reports no errors, good.

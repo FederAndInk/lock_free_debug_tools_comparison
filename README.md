@@ -106,7 +106,7 @@ right ? but this could also be:
 r1: 0, r2: 0
 it can arise if #1 #2 or #3 #4 are reordered (store/load reorder)
 to prevent memory reordering use barrier or std::atomic with memory_order
-(by default it is sequentially consistant)
+(by default it is sequentially consistent)
 */
 ```
 
@@ -210,14 +210,14 @@ Tests list:
     - [Fix simple data race relaxed](./code/atomic/atomic_fix_data_race_relaxed.cpp)
     - [Fix simple data race relaxed CppMem](./code/atomic/atomic_fix_data_race_relaxed.cppmem)
   - Producer consumer:
-    - [Notification sequentially consistant](./code/prod_cons/notif_seq_cst.cpp)
-    - [Notification sequentially consistant CppMem](./code/prod_cons/notif_seq_cst.cppmem)
+    - [Notification sequentially consistent](./code/prod_cons/notif_seq_cst.cpp)
+    - [Notification sequentially consistent CppMem](./code/prod_cons/notif_seq_cst.cppmem)
     - [Notification acquire release](./code/prod_cons/notif_acq_rel.cpp)
     - [Notification acquire release CppMem](./code/prod_cons/notif_acq_rel.cppmem)
   - [ABA' fixed](./code/aba/aba_fixed.cpp)
   - Memory ordering
-    - [store/load sequentially consistant](./code/memory_ordering/store_load_seq_cst.cpp)
-    - [store/load sequentially consistant CppMem](./code/memory_ordering/store_load_seq_cst.cppmem)
+    - [store/load sequentially consistent](./code/memory_ordering/store_load_seq_cst.cpp)
+    - [store/load sequentially consistent CppMem](./code/memory_ordering/store_load_seq_cst.cppmem)
     - [store/load acquire release](./code/memory_ordering/store_load_acq_rel_sem.cpp)
     - [store/load acquire release CppMem](./code/memory_ordering/store_load_acq_rel_sem.cppmem)
     - [store/load relaxed](./code/memory_ordering/store_load_relaxed.cpp)
@@ -308,15 +308,15 @@ The [suppressions file](./valgrind.supp) if you want.
 | ----------------------------------------------------------------------------------- | :---: | :---: | :----------: | ----------------------------------------------------- |
 | [Simple data race fix](./code/atomic/atomic_fix_data_race_simple.cpp)               |  ✔?   |   ✔   |      ✔       | [more](./outputs/drd.md#Data-race-atomic-fix)         |
 | [Simple data race fix relaxed](./code/atomic/atomic_fix_data_race_relaxed.cpp)      |  ✔?   |  ✔?   |      ✔?      | [more](./outputs/drd.md#Data-race-atomic-fix-relaxed) |
-| [Notification sequentially consistant](./code/prod_cons/notif_seq_cst.cpp)          |  ✔?   |  ✔?   |      ✔?      | [more](./outputs/drd.md#Notification-fix)             |
+| [Notification sequentially consistent](./code/prod_cons/notif_seq_cst.cpp)          |  ✔?   |  ✔?   |      ✔?      | [more](./outputs/drd.md#Notification-fix)             |
 | [Notification acquire release](./code/prod_cons/notif_acq_rel.cpp)                  |  ✔?   |  ✔?   |      ✔?      | [more](./outputs/drd.md#Notification-fix)             |
 | [ABA' fixed](./code/aba/aba_fixed.cpp)                                              |   ✔   |   ✔   |      ✔       | [more](./outputs/drd.md#ABA-fix)                      |
-| [store/load sequentially consistant](./code/memory_ordering/store_load_seq_cst.cpp) |   .   |   .   |      .       | DRD does nothing on that, not the purpose of it       |
+| [store/load sequentially consistent](./code/memory_ordering/store_load_seq_cst.cpp) |   .   |   .   |      .       | DRD does nothing on that, not the purpose of it       |
 | [store/load acquire release](./code/memory_ordering/store_load_acq_rel_sem.cpp)     |   .   |   .   |      .       | DRD does nothing on that, not the purpose of it       |
 | [store/load relaxed](./code/memory_ordering/store_load_relaxed.cpp)                 |   .   |   .   |      .       | DRD does nothing on that, not the purpose of it       |
 
 - ✔: The tool has correctly detected the error or correctly reported no error
-- ?: The tool has reported an error when there was no error
+- ?: The tool has reported an error even though there was no error
 - ✘: The tool has not reported the error
 - !: The tool has crashed
 - \<n> if a number is specified it means that the error is manifesting when looping n times.
@@ -400,15 +400,15 @@ The [suppressions file](./valgrind.supp) if you want.
 | ----------------------------------------------------------------------------------- | :---: | :---: | :----------: | ----------------------------------------------------------- |
 | [Simple data race fix](./code/atomic/atomic_fix_data_race_simple.cpp)               |  ✔?   |   ✔   |      ✔       | [more](./outputs/helgrind.md#Data-race-atomic-fix)          |
 | [Simple data race fix relaxed](./code/atomic/atomic_fix_data_race_relaxed.cpp)      |  ✔?   |  ✔?   |      ✔?      | [more](./outputs/helgrind.md#Data-race-atomic-fix-relaxed)  |
-| [Notification sequentially consistant](./code/prod_cons/notif_seq_cst.cpp)          |  ✔?   |  ✔?   |      ✔?      | [more](./outputs/helgrind.md#Notification-fix)              |
+| [Notification sequentially consistent](./code/prod_cons/notif_seq_cst.cpp)          |  ✔?   |  ✔?   |      ✔?      | [more](./outputs/helgrind.md#Notification-fix)              |
 | [Notification acquire release](./code/prod_cons/notif_acq_rel.cpp)                  |  ✔?   |  ✔?   |      ✔?      | [more](./outputs/helgrind.md#Notification-fix)              |
 | [ABA' fixed](./code/aba/aba_fixed.cpp)                                              |   ✔   |   ✔   |      ✔       | [more](./outputs/helgrind.md#ABA-fix)                       |
-| [store/load sequentially consistant](./code/memory_ordering/store_load_seq_cst.cpp) |   .   |   .   |      .       | Helgrind does nothing on that, not the purpose of it though |
+| [store/load sequentially consistent](./code/memory_ordering/store_load_seq_cst.cpp) |   .   |   .   |      .       | Helgrind does nothing on that, not the purpose of it though |
 | [store/load acquire release](./code/memory_ordering/store_load_acq_rel_sem.cpp)     |   .   |   .   |      .       | Helgrind does nothing on that, not the purpose of it though |
 | [store/load relaxed](./code/memory_ordering/store_load_relaxed.cpp)                 |   .   |   .   |      .       | Helgrind does nothing on that, not the purpose of it though |
 
 - ✔: The tool has correctly detected the error or correctly reported no error
-- ?: The tool has reported an error when there was no error
+- ?: The tool has reported an error even though there was no error
 - ✘: The tool has not reported the error
 - !: The tool has crashed
 - \<n> if a number is specified it means that the error is manifesting when looping n times.
@@ -470,15 +470,15 @@ PATH_COLORIZER_SEARCH=$HOME ./path_colorizer.sh ./program
 | ----------------------------------------------------------------------------------- | :---: | :---: | :----------: | ------------------------------------------------------- |
 | [Simple data race fix](./code/atomic/atomic_fix_data_race_simple.cpp)               |   ✔   |   ✔   |      ✔       | [more](./outputs/tsan.md#Data-race-atomic-fix)          |
 | [Simple data race fix relaxed](./code/atomic/atomic_fix_data_race_relaxed.cpp)      |   ✔   |   ✔   |      ✔       | [more](./outputs/tsan.md#Data-race-atomic-fix-relaxed)  |
-| [Notification sequentially consistant](./code/prod_cons/notif_seq_cst.cpp)          |   ✔   |   ✔   |      ✔       | [more](./outputs/tsan.md#Notification-fix)              |
+| [Notification sequentially consistent](./code/prod_cons/notif_seq_cst.cpp)          |   ✔   |   ✔   |      ✔       | [more](./outputs/tsan.md#Notification-fix)              |
 | [Notification acquire release](./code/prod_cons/notif_acq_rel.cpp)                  |   ✔   |   ✔   |      ✔       | [more](./outputs/tsan.md#Notification-fix)              |
 | [ABA' fixed](./code/aba/aba_fixed.cpp)                                              |   ✔   |   ✔   |      ✔       | [more](./outputs/tsan.md#ABA-fix)                       |
-| [store/load sequentially consistant](./code/memory_ordering/store_load_seq_cst.cpp) |   .   |   .   |      .       | Tsan does nothing on that, not the purpose of it though |
+| [store/load sequentially consistent](./code/memory_ordering/store_load_seq_cst.cpp) |   .   |   .   |      .       | Tsan does nothing on that, not the purpose of it though |
 | [store/load acquire release](./code/memory_ordering/store_load_acq_rel_sem.cpp)     |   .   |   .   |      .       | Tsan does nothing on that, not the purpose of it though |
 | [store/load relaxed](./code/memory_ordering/store_load_relaxed.cpp)                 |   .   |   .   |      .       | Tsan does nothing on that, not the purpose of it though |
 
 - ✔: The tool has correctly detected the error or correctly reported no error
-- ?: The tool has reported an error when there was no error
+- ?: The tool has reported an error even though there was no error
 - ✘: The tool has not reported the error
 - !: The tool has crashed
 - \<n> if a number is specified it means that the error is manifesting when looping n times.
@@ -572,7 +572,7 @@ Then the graph describing that execution.
 - hb: happens-before
 - rf: read from
 - dr: data race
-- sc: sequentially consistant
+- sc: sequentially consistent
 
 More details on their [help page](http://svr-pes20-cppmem.cl.cam.ac.uk/cppmem/help.html).
 
@@ -580,20 +580,20 @@ More details on their [help page](http://svr-pes20-cppmem.cl.cam.ac.uk/cppmem/he
 
 We have to convert the C++ into CppMem syntax, some test aren't there because CppMem does not support features used in it.
 
-| Sample                                                                                        | Result | Details |
-| --------------------------------------------------------------------------------------------- | ------ | ------- |
-| [Simple data race CppMem](./code/data_race/data_race_simple.cppmem)                           |        |         |
-| [Data race on notify CppMem](./code/data_race/pseudo_notif.cppmem)                            |        |         |
-| [Fix simple data race CppMem](./code/atomic/atomic_fix_data_race_simple.cppmem)               |        |         |
-| [Fix simple data race relaxed CppMem](./code/atomic/atomic_fix_data_race_relaxed.cppmem)      |        |         |
-| [Notification load relaxed CppMem](./code/prod_cons/notif_wrong_acq_rel.cppmem)               |        |         |
-| [Notification load relaxed in loop CppMem](./code/prod_cons/notif_wrong_acq_rel_2.cppmem)     |        |         |
-| [Notification load/store relaxed CppMem](./code/prod_cons/notif_relaxed.cppmem)               |        |         |
-| [Notification sequentially consistant CppMem](./code/prod_cons/notif_seq_cst.cppmem)          |        |         |
-| [Notification acquire release CppMem](./code/prod_cons/notif_acq_rel.cppmem)                  |        |         |
-| [store/load sequentially consistant CppMem](./code/memory_ordering/store_load_seq_cst.cppmem) |        |         |
-| [store/load acquire release CppMem](./code/memory_ordering/store_load_acq_rel_sem.cppmem)     |        |         |
-| [store/load relaxed CppMem](./code/memory_ordering/store_load_relaxed.cppmem)                 |        |         |
+| Sample                                                                                        | Result | Details                                                               |
+| --------------------------------------------------------------------------------------------- | :----: | --------------------------------------------------------------------- |
+| [Simple data race CppMem](./code/data_race/data_race_simple.cppmem)                           |   ✔    | [more](./outputs/cppmem.md#Simple-data-race)                          |
+| [Data race on notify CppMem](./code/data_race/pseudo_notif.cppmem)                            |   ✔    | [more](./outputs/cppmem.md#Pseudo-notification)                       |
+| [Notification load relaxed CppMem](./code/prod_cons/notif_wrong_acq_rel.cppmem)               |   ✔    | [more](./outputs/cppmem.md#Notification-load-relaxed)                 |
+| [Notification load relaxed in loop CppMem](./code/prod_cons/notif_wrong_acq_rel_2.cppmem)     |   ✘    | [more](./outputs/cppmem.md#Notification-load-relaxed-in-loop)         |
+| [Notification load/store relaxed CppMem](./code/prod_cons/notif_relaxed.cppmem)               |   ✔    | [more](./outputs/cppmem.md#Notification-loadstore-relaxed)            |
+| [Fix simple data race CppMem](./code/atomic/atomic_fix_data_race_simple.cppmem)               |   ✔    | [more](./outputs/cppmem.md#Data-race-atomic-fix)                      |
+| [Fix simple data race relaxed CppMem](./code/atomic/atomic_fix_data_race_relaxed.cppmem)      |   ✔    | [more](./outputs/cppmem.md#Data-race-atomic-fix-relaxed)              |
+| [Notification sequentially consistent CppMem](./code/prod_cons/notif_seq_cst.cppmem)          |   ✔    | [more](./outputs/cppmem.md#Notification-fix-sequentially-consistent)  |
+| [Notification acquire release CppMem](./code/prod_cons/notif_acq_rel.cppmem)                  |   ✔    | [more](./outputs/cppmem.md#Notification-fix-acquire-release-sementic) |
+| [store/load sequentially consistent CppMem](./code/memory_ordering/store_load_seq_cst.cppmem) |   ✔    | [more](./outputs/cppmem.md#storeload-sequentially-consistent)         |
+| [store/load acquire release CppMem](./code/memory_ordering/store_load_acq_rel_sem.cppmem)     |   ✔    | [more](./outputs/cppmem.md#storeload-acquire-release-sementic)        |
+| [store/load relaxed CppMem](./code/memory_ordering/store_load_relaxed.cppmem)                 |   ✔    | [more](./outputs/cppmem.md#storeload-relaxed)                         |
 
 You can see [output samples](./outputs/cppmem.md).
 
